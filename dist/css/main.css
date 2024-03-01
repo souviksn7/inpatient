@@ -1,0 +1,231 @@
+/*!
+ * Asthma-Timeline CSS file
+ */
+
+* {
+  margin: 0px;
+}
+
+BODY {
+  font-family: arial, sans-serif;
+}
+
+#healthchart_timeline div.new {
+	background-color: orange;
+}
+
+#healthchart_timeline {
+  margin: 10px 0px 10px 0px;
+}
+
+.healthchart-severity-high {
+  fill: #B72413;
+}
+
+.healthchart-severity-medium {
+  fill: #D4782A;
+}
+
+.healthchart-severity-low {
+  fill: #2c7bb6;
+}
+
+.healthchart-frame {
+  fill: none;
+  stroke: #000000;
+  stroke-width: 2px
+}
+
+.healthchart-data-point {
+  fill: #cccccc;
+  stroke: #000000;
+  stroke-width: 1px
+}
+
+.healthchart-context-point {
+  fill: #1b1e23;
+  stroke: #000000;
+  stroke-width: 1px;
+  opacity: .4;
+}
+
+#healthchart-lookback-line {
+  stroke: #000000;
+  stroke-dasharray: 5,7;
+  stroke-width: 2;
+}
+
+.healthchart-connection-line {
+  stroke: #000000;
+  stroke-width: 2;
+}
+
+#healthchart-resources-header {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#healthchart-details {
+  text-anchor: middle;
+  font-size: 14px;
+}
+
+.healthchart-hide-splash {
+  font-size: 15px;
+}
+
+#healthchart-details-splash-header {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#healthchart-details-splash-footer {
+  font-size: 12px;
+}
+
+.healthchart-context-point-highlight {
+  stroke: #B72413;
+}
+
+.healthchart-data-point-select {
+  stroke-width: 2px
+}
+
+.healthchart-row-highlight {
+  fill: #FFFFFF;
+}
+
+.healthchart-row-highlight-alt {
+  fill: #F4F4F4;
+}
+
+.healthchart-row-label {
+  font-size: 13px;
+}
+
+.healthchart-row-header {
+  font-weight: bold;
+}
+
+.healthchart-title {
+  font-size: 20px;
+  text-anchor: middle;
+  font-weight: bold;
+}
+
+.healthchart-button-text {
+  font-size: 13px;
+  opacity: .62;
+  font-weight: 500;
+  text-anchor: start;
+}
+
+.healthchart-button-select {
+  opacity: 1;
+}
+
+.healthchart-year-label {
+  text-anchor: start;
+  font-size: 20px;
+  fill: #737373;
+  opacity: .5;
+}
+
+.healthchart-count {
+  font-size: 13px;
+}
+
+.healthchart-resources-text {
+  font-size: 12px;
+}
+
+.healthchart-frame {
+  font-size: 20px;
+  text-anchor: start;
+}
+
+.healthchart-severity-header {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.healthchart-severity-reason {
+  font-size: 13px;
+}
+
+#healthchart_timeline text {
+  font-family: Arial, sans-serif;
+}
+
+.healthchart-axis path,
+.healthchart-axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.healthchart-focus-axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+.healthchart-context-axis text {
+    font-family: sans-serif;
+    font-size: 9px;
+}
+
+.healthchart-brush .extent {
+  stroke: #FFFFFF;
+  fill: #637777;
+  opacity: 0.2;
+  shape-rendering: crispedges;
+}
+
+.healthchart-hand {
+    cursor: pointer;
+}
+
+.healthchart-link {
+  fill: #0000FF;
+  font-weight: normal;
+}
+
+.healthchart-highlight {
+  fill: #FDE160;
+}
+
+.healthchart-details-text {
+  fill: ;#000000;
+  font-size: 13px;
+  text-anchor: start;
+}
+
+.healthchart-details-text-key {
+  font-weight: bold;
+}
+
+div.healthchart-tooltip {   
+  position: absolute;
+  text-align: center;
+  white-space: nowrap;
+  padding: 5px;
+  border-radius: 6px;
+  font: 12px sans-serif;
+  background-color: #555555;
+  color: #FFFFFF;
+  border: 0px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+
+div.healthchart-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}

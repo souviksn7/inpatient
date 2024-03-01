@@ -1,0 +1,99 @@
+#!/usr/bin/env groovy
+
+// Production Jenkins Pipeline to deploy HealthChart Inpatient Asthma application
+
+properties([
+  buildDiscarder(
+    logRotator(
+      daysToKeepStr: "7",
+      numToKeepStr: "10"
+    )
+  ),
+  parameters([
+    booleanParam(name: 'REVERT', defaultValue: false, description: 'Select this option to revert to a prior version of the application. Please also provide a version name.'),
+    string(name: 'VERSION', defaultValue: '', description: 'Enter a version name for this release', trim: true),
+    string(name: 'GIT_COMMIT', defaultValue: '', description: 'Enter a git commit to deploy.', trim: true)
+  ])
+])
+
+def vaultConfig = [
+  engineVersion: 2,
+  vaultNamespace: "cds",
+  vaultCredentialId: "cds-vault-approle",
+  vaultUrl: "https://risvault.research.chop.edu"
+]
+
+def vaultSecrets = [
+  [
+    path: 'kv/admin/github/is-jenkins',
+    secretValues: [
+      [envVar: 'GITHUB_ACCESS_TOKEN', vaultKey: 'access-token'],
+      [envVar: 'GITHUB_ACCESS_USER', vaultKey: 'username'],
+    ]
+  ]
+]
+
+def deployApp(server) {
+  def repoName = "healthchart-inpatient-asthma"
+  sshPublisher(
+    publishers: [
+      sshPublisherDesc(
+        configName: server,
+        verbose: false,
+        transfers: [
+          sshTransfer(
+            cleanRemote: true,
+            execCommand: "cd /usr/local/care/interventions/${repoName} && sh scripts/deploy.sh && rm -rf scripts/",
+            remoteDirectory: "interventions/${repoName}",
+            sourceFiles: "scripts/deploy.sh,release.zip"
+      )]
+    )]
+  )
+}
+
+node("dbhi") {
+
+  stage("Prep Workspace") {
+    deleteDir()
+  }
+
+  stage("Checkout Source") {
+    checkout scm
+  }
+
+  stage("Build") {
+    try {
+      sh '''
+        npm install
+        production=true npm run build
+      '''
+    } catch (e) {
+      deleteDir()
+      throw e
+    }
+  }
+
+  stage("Deploy Service") {
+    try {
+      deployApp("intvwebpl1")
+      deployApp("intvwebpl2")
+    } catch (e) {
+      throw e
+    }
+  }
+
+  withVault(configuration: vaultConfig, vaultSecrets: vaultSecrets) {
+    stage("Manage Releases") {
+      env.PRERELEASE = "false"
+      if (!params.REVERT) {
+        sh '''
+          sh scripts/github_release.sh
+        '''
+      }
+    }
+  }
+
+  stage("Clean Workspace") {
+    deleteDir()
+  }
+}

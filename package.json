@@ -1,0 +1,48 @@
+{
+  "name": "healthchart-inpatient-asthma",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Interactive asthma information visualization for inpatient.",
+  "private": true,
+  "keywords": [
+    "asthma",
+    "inpatient",
+    "timeline",
+    "health",
+    "visualization"
+  ],
+  "homepage": "https://github.research.chop.edu/dbhi/healthchart-inpatient-asthma",
+  "license": "TBD",
+  "author": {
+    "name": "Jeritt Thayer",
+    "url": "https://dbhi.chop.edu/index.php/people/40-people/390-jeritt-thayer.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.research.chop.edu/dbhi/healthchart-inpatient-asthma.git"
+  },
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c && cd dist && zip -r release.zip ./* -x ./js/healthchart.js && mv release.zip ../",
+    "jshint": "./node_modules/jshint/bin/jshint src conf"
+  },
+  "jshintConfig": {
+    "esversion": "5"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.1.0",
+    "jshint": "^2.13.6",
+    "rollup": "^3.3.0",
+    "rollup-plugin-execute": "^1.1.1"
+  },
+  "dependencies": {
+    "core-js": "^3.32.1",
+    "http-server": "^14.1.1",
+    "jquery": "^3.6.1",
+    "lodash": "^4.17.21"
+  }
+}
