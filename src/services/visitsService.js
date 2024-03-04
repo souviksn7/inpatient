@@ -159,6 +159,7 @@ function createDetailMap(encMap,start,end,startStr, resource) {
 }
 // Obtain contact serial number (EHR encounter ID)
 function mapCsn(csnList,csnToFhirIdMap,encMap,resource){
+  console.log("mapcsn",encMap)
     resource.identifier.forEach(function (id, j) {
         if (id.system.indexOf(".7.3.698084.8") >= 0) {
           // Add csn to encounter object
@@ -216,6 +217,7 @@ function linkAcurateCareList(acuteCareList, resource) {
   if ([1, 3, 4, 5].indexOf(resource.adtClass) >= 0) {
     acuteCareList.push(resource);
   }
+  return acuteCareList
 }
 
 // this function is used to create data that will used to plot point on chart
@@ -237,7 +239,7 @@ function checkAndAddAdmission(encMap, resource) {
   if ([1, 5].indexOf(resource.adtClass) >= 0) {
     // Add details about the encounter to the encounter map
     encMap[resource.id].row = resource.row = "Inpatient";
-    resource.shape = "circle"
+    resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     encMap[resource.id].detailMap.Type.value = resource.adtClassName;
 
     // Add location to hover details
@@ -254,7 +256,7 @@ function checkAndAddAdmission(encMap, resource) {
 
     // Add details about the encounter to the encounter map
     encMap[resource.id].row = resource.row = "Emergency Only";
-    resource.shape = "circle"
+    resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     encMap[resource.id].detailMap.Type.value = resource.adtClassName;
 
     // Add location to hover details
@@ -304,19 +306,19 @@ function checkAndAddAdmission(encMap, resource) {
     }
     if (resource.adtClass == 4) {
       encMap[resource.id].row = resource.row = "Allergy";
-      resource.shape = "circle"
+      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     }
     if (resource.adtClass == 82) {
       encMap[resource.id].row = resource.row = "Primary Care";
-      resource.shape = "circle"
+      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     }
     if (resource.adtClass == 105) {
       encMap[resource.id].row = resource.row = "Emergency Only";
-      resource.shape = "circle"
+      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     }
     if (resource.adtClass == 110) {
       encMap[resource.id].row = resource.row = "Pulmonary";
-      resource.shape = "circle"
+      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     }
   }
 

@@ -16317,7 +16317,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	};
 
 	var today = new Date();
-	(chartConfig.rowMap = {});
+	var rowMap$1 = (chartConfig.rowMap = {});
 	chartConfig.rows.forEach(function (v, i) {
 	  chartConfig.rowMap[v.name] = i;
 	});
@@ -16473,6 +16473,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	}
 	// Obtain contact serial number (EHR encounter ID)
 	function mapCsn(csnList,csnToFhirIdMap,encMap,resource){
+	  console.log("mapcsn",encMap);
 	    resource.identifier.forEach(function (id, j) {
 	        if (id.system.indexOf(".7.3.698084.8") >= 0) {
 	          // Add csn to encounter object
@@ -16524,6 +16525,15 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  return encDateMap;
 	}
 
+	// Add encounter to the acute care list, which will be used to obtain
+	// medication administration records.
+	function linkAcurateCareList(acuteCareList, resource) {
+	  if ([1, 3, 4, 5].indexOf(resource.adtClass) >= 0) {
+	    acuteCareList.push(resource);
+	  }
+	  return acuteCareList
+	}
+
 	// this function is used to create data that will used to plot point on chart
 	// here group will work as link between visits, medication, and others
 	// hoverdetails will provide the visible detail on hover
@@ -16543,7 +16553,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  if ([1, 5].indexOf(resource.adtClass) >= 0) {
 	    // Add details about the encounter to the encounter map
 	    encMap[resource.id].row = resource.row = "Inpatient";
-	    resource.shape = "circle";
+	    resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    encMap[resource.id].detailMap.Type.value = resource.adtClassName;
 
 	    // Add location to hover details
@@ -16560,7 +16570,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 
 	    // Add details about the encounter to the encounter map
 	    encMap[resource.id].row = resource.row = "Emergency Only";
-	    resource.shape = "circle";
+	    resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    encMap[resource.id].detailMap.Type.value = resource.adtClassName;
 
 	    // Add location to hover details
@@ -16610,19 +16620,19 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    }
 	    if (resource.adtClass == 4) {
 	      encMap[resource.id].row = resource.row = "Allergy";
-	      resource.shape = "circle";
+	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    }
 	    if (resource.adtClass == 82) {
 	      encMap[resource.id].row = resource.row = "Primary Care";
-	      resource.shape = "circle";
+	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    }
 	    if (resource.adtClass == 105) {
 	      encMap[resource.id].row = resource.row = "Emergency Only";
-	      resource.shape = "circle";
+	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    }
 	    if (resource.adtClass == 110) {
 	      encMap[resource.id].row = resource.row = "Pulmonary";
-	      resource.shape = "circle";
+	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    }
 	  }
 
@@ -16658,7 +16668,11 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	var encounters$1 = [];
 	var locations$1 = [];
 	var locationMap$1 = {};
+	var encMap$1 = {};
 	var encDateMap$1 = {};
+	var csnList = [];
+	var csnToFhirIdMap = {};
+	var acuteCareList$1 = [];
 
 
 	var visitsData = visitApiCall();
@@ -16667,7 +16681,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  return visitsData.then(function (data) {
 	    
 	    ({ encounters: encounters$1, locations: locations$1 } = encAndLocSep(encounters$1, locations$1, data.entry));
-
+	    console.log('locations: ',locations$1);
 	    locationMap$1 = filterLocations(locations$1, locationMap$1);
 	  });
 	}
@@ -16675,7 +16689,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  
 	   return dataSeparation().then(function () {
 	    // console.log("ewejrkljelkr",encounters)
-	  
+	    
 	         encounters$1 = encounters$1.filter(function (resource) {
 	         console.log("resource.id",resource.id, checkStatus(resource));
 	          if (!checkStatus(resource)) {
@@ -16686,23 +16700,28 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	          if(!checkDate(start,end)){
 	              return false
 	          }
-	          var encMap={};
-	          if(!checkExitingResource(encMap,resource)){
+	          
+	          if(!checkExitingResource(encMap$1,resource)){
 	              return false
 	          }
-
+	          
 	          // console.log("fix",resource)
-	          encMap = createDetailMap(encMap,start,end,startStr,resource);
-	          var csnList = [];
-	          var csnToFhirIdMap = {};
-	         
-	          var {csnList,csnToFhirIdMap,encMap,resource}= mapCsn(csnList,csnToFhirIdMap,encMap,resource);
+	          encMap$1 = createDetailMap(encMap$1,start,end,startStr,resource);
+	          mapCsn(csnList, csnToFhirIdMap, encMap$1, resource);
+	          // ({ csnList, csnToFhirIdMap, encMap, resource } = mapCsnResult);
+
+	          //  console.log(hello)
+	          var result = mapCsn(csnList,csnToFhirIdMap,encMap$1,resource);
+	          csnList = result.csnList;
+	          csnToFhirIdMap = result.csnToFhirIdMap;
+	          encMap$1 = result.encMap;
+	          resource = result.resource;
 	          resource = encTypeAndClass(resource);
 	      
 	          encDateMap$1 = linkEncDateMap(encDateMap$1,startStr,endStr,resource);
-	          // acuteCareList = linkAcurateCareList(acuteCareList,resource)
+	          acuteCareList$1 = linkAcurateCareList(acuteCareList$1,resource);
 	          resource = createGroupAndHoverDetails(startStr,resource);
-	          resource = checkAndAddAdmission(encMap,resource);
+	          resource = checkAndAddAdmission(encMap$1,resource);
 	          
 	          return true
 	        });

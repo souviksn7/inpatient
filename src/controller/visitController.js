@@ -32,7 +32,7 @@ function dataSeparation() {
   return visitsData.then(function (data) {
     
     ({ encounters, locations } = encAndLocSep(encounters, locations, data.entry));
-
+    console.log('locations: ',locations)
     locationMap = filterLocations(locations, locationMap);
   });
 }
@@ -40,7 +40,7 @@ function getEncounters(){
   
    return dataSeparation().then(function () {
     // console.log("ewejrkljelkr",encounters)
-  
+    
          encounters = encounters.filter(function (resource) {
          console.log("resource.id",resource.id, checkStatus(resource))
           if (!checkStatus(resource)) {
@@ -51,21 +51,26 @@ function getEncounters(){
           if(!checkDate(start,end)){
               return false
           }
-          var encMap={}
+          
           if(!checkExitingResource(encMap,resource)){
               return false
           }
-
+          
           // console.log("fix",resource)
           encMap = createDetailMap(encMap,start,end,startStr,resource)
-          var csnList = [];
-          var csnToFhirIdMap = {};
-         
-          var {csnList,csnToFhirIdMap,encMap,resource}= mapCsn(csnList,csnToFhirIdMap,encMap,resource)
+          const mapCsnResult = mapCsn(csnList, csnToFhirIdMap, encMap, resource);
+          // ({ csnList, csnToFhirIdMap, encMap, resource } = mapCsnResult);
+
+          //  console.log(hello)
+          var result = mapCsn(csnList,csnToFhirIdMap,encMap,resource)
+          csnList = result.csnList
+          csnToFhirIdMap = result.csnToFhirIdMap
+          encMap = result.encMap
+          resource = result.resource
           resource = encTypeAndClass(resource)
       
           encDateMap = linkEncDateMap(encDateMap,startStr,endStr,resource)
-          // acuteCareList = linkAcurateCareList(acuteCareList,resource)
+          acuteCareList = linkAcurateCareList(acuteCareList,resource)
           resource = createGroupAndHoverDetails(startStr,resource)
           resource = checkAndAddAdmission(encMap,resource)
           
