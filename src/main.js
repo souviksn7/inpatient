@@ -3,8 +3,8 @@ import jQuery from "jquery";
 import merge from "lodash/merge";
 import each from "lodash/each";
 import healthchart from "healthchart";
-import { myData } from "./data.js";
-var encountersconfig = myData;
+import { visitsData } from "./data.js";
+var encountersconfig = visitsData;
 // console.log(encountersconfig)
 import { getVisitsData } from "./controller/visitController.js";
 
@@ -202,9 +202,10 @@ function buildApp() {
 
   // Get data
   getVisitsData().then(function(data){
-    console.log(data)
-   encounters=data
-   console.log("herer",encounters)
+    // console.log(data)
+   encounters=data.encounters
+   encMap = data.encMap
+  //  console.log("herer",encounters)
   }).then(process,dataFail)
   // getPreliminaryData().then(function () {
   //   try {

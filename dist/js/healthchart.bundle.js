@@ -15591,165 +15591,536 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  
 	  
 
-	const myData =  {
-	    entry: [
-	      {
-	        resource: {
-	          resourceType: "Encounter",
-	          id: 1,
-	          status:'unknown'
-	        },
-	      },
-	      {
-	          resource: {
-	            resourceType: "Encounter",
-	            id: 2,
-	            status:'arrived',
-	            
-	            period:{
-	              start:"2023-08-10T10:00:00",
-	              end:"2023-08-15T18:30:00"
-	            },
-	            identifier:[
-	              {
-	                  system:'.7.3.698084.8',
-	                  value:'value',
-	  
-	              }
+	const visitsData$1 = {
+	    "resourceType": "Bundle",
+	    "type": "searchset",
+	    "total": 47,
+	    "link": [
+	        {
+	            "relation": "self",
+	            "url": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter?patient=ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3&date=gt2018-06-15"
+	        }
+	    ],
+	    "entry": [
+	        {
+	            "link": [
+	                {
+	                    "relation": "self",
+	                    "url": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3"
+	                }
 	            ],
-	            type:[
-	              {
-	                  coding:[
-	                      {
-	                          system:".7.10.698084.30",
-	                          code:'3',
-	                          display:''
-	                      }
-	                  ]
-	              }
-	            ]
-	          },
+	            "fullUrl": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+	            "resource": {
+	                "resourceType": "Location",
+	                "id": "44319901",
+	                extension:[{
+	                    valueCodeableConcept:{
+	        coding:[
+	            {
+	                system:".7.10.688867.4150",
+	                code:"82"
+	            }
+	        ]
+	                    }
+	                }
+	                
+	                ],
+	                identifier:[
+	                   {
+	                    system:".7.2.686980",
+	                    value:"sjdfkjdshf"
+	                   }
+	                ],
+	                "status": "arrived",
+	                "class": {
+	                    "system": "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+	                    "code": "5",
+	                    "display": "Appointment"
+	                },
+	                
+	                "subject": {
+	                    "reference": "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+	                    "display": "Test, Healthchart"
+	                },
+	                "participant": [
+	                    {
+	                        "type": [
+	                            {
+	                                "coding": [
+	                                    {
+	                                        "system": "http://hl7.org/fhir/v3/ParticipationType",
+	                                        "code": "REF",
+	                                        "display": "referrer"
+	                                    }
+	                                ],
+	                                "text": "referrer"
+	                            }
+	                        ],
+	                        
+	                    },
+	                    {
+	                        "period": {
+	                            "start": "2022-05-25T14:00:00Z",
+	                            "end": "2022-05-25T14:30:00Z"
+	                        },
+	                        
+	                    }
+	                ],
+	                "period": {
+	                    "start": "2022-05-25T14:00:00Z",
+	                    "end": "2022-05-25T14:30:00Z"
+	                },
+	                "location": [
+	                    {
+	                        "location": {
+	                            "reference": "Location/44319901",
+	                            "display": "Buerger Center Allergy"
+	                        }
+	                    }
+	                ]
+	            },
+	            "search": {
+	                "mode": "match"
+	            }
+	        },
+	        {
+	            "link": [
+	                {
+	                    "relation": "self",
+	                    "url": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3"
+	                }
+	            ],
+	            "fullUrl": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+	            "resource": {
+	                "resourceType": "Encounter",
+	                "id": "etPlPSTi-Ck8pFW0vJgBM6A3",
+	                "identifier": [
+	                    {
+	                        "use": "usual",
+	                        "system": "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+	                        "value": "8700006468"
+	                    },
+	                    {
+	                        "use": "usual",
+	                        "type": {
+	                            "text": "billing-number"
+	                        },
+	                        "system": "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.17",
+	                        "value": "8700006468"
+	                    }
+	                ],
+	                "status": "arrived",
+	                "class": {
+	                    "system": "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+	                    "code": "5",
+	                    "display": "Appointment"
+	                },
+	                "type": [
+	                    {
+	                        "coding": [
+	                            {
+	                                "system": "urn:oid:1.2.840.114350.1.13.20.3.7.10.698084.30",
+	                                "code": "50",
+	                                "display": "Appointment"
+	                            }
+	                        ],
+	                        "text": "Appointment"
+	                    },
+	                    {
+	                        "coding": [
+	                            {
+	                                "system": "urn:oid:1.2.840.114350.1.13.20.3.7.2.808267",
+	                                "code": "3044",
+	                                "display": "BIOLOGIC"
+	                            }
+	                        ],
+	                        "text": "BIOLOGIC"
+	                    }
+	                ],
+	                "subject": {
+	                    "reference": "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+	                    "display": "Test, Healthchart"
+	                },
+	                "participant": [
+	                    {
+	                        "type": [
+	                            {
+	                                "coding": [
+	                                    {
+	                                        "system": "http://hl7.org/fhir/v3/ParticipationType",
+	                                        "code": "REF",
+	                                        "display": "referrer"
+	                                    }
+	                                ],
+	                                "text": "referrer"
+	                            }
+	                        ],
+	                        
+	                    },
+	                    {
+	                        "period": {
+	                            "start": "2022-05-25T14:00:00Z",
+	                            "end": "2022-05-25T14:30:00Z"
+	                        },
+	                        
+	                    }
+	                ],
+	                "period": {
+	                    "start": "2022-05-25T14:00:00Z",
+	                    "end": "2022-05-25T14:30:00Z"
+	                },
+	                "location": [
+	                    {
+	                        "location": {
+	                            "reference": "Location/44319901",
+	                            "display": "Buerger Center Allergy"
+	                        }
+	                    }
+	                ]
+	            },
+	            "search": {
+	                "mode": "match"
+	            },
+	            
+	        },
+	        {
+	            "link": [
+	                {
+	                    "relation": "self",
+	                    "url": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3"
+	                }
+	            ],
+	            "fullUrl": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+	            "resource": {
+	                "resourceType": "Location",
+	                "id": "44319902",
+	                extension:[{
+	                    valueCodeableConcept:{
+	        coding:[
+	            {
+	                system:".7.10.688867.4150",
+	                code:"3"
+	            }
+	        ]
+	                    }
+	                }
+	                
+	                ],
+	                identifier:[
+	                   {
+	                    system:".7.2.686980",
+	                    value:"sjdfkjdshf"
+	                   }
+	                ],
+	                "status": "arrived",
+	                "class": {
+	                    "system": "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+	                    "code": "5",
+	                    "display": "Appointment"
+	                },
+	                
+	                "subject": {
+	                    "reference": "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+	                    "display": "Test, Healthchart"
+	                },
+	                "participant": [
+	                    {
+	                        "type": [
+	                            {
+	                                "coding": [
+	                                    {
+	                                        "system": "http://hl7.org/fhir/v3/ParticipationType",
+	                                        "code": "REF",
+	                                        "display": "referrer"
+	                                    }
+	                                ],
+	                                "text": "referrer"
+	                            }
+	                        ],
+	                        
+	                    },
+	                    {
+	                        "period": {
+	                            "start": "2022-05-25T14:00:00Z",
+	                            "end": "2022-05-25T14:30:00Z"
+	                        },
+	                        
+	                    }
+	                ],
+	                "period": {
+	                    "start": "2022-05-25T14:00:00Z",
+	                    "end": "2022-05-25T14:30:00Z"
+	                },
+	                "location": [
+	                    {
+	                        "location": {
+	                            "reference": "Location/44319901",
+	                            "display": "Buerger Center Allergy"
+	                        }
+	                    }
+	                ]
+	            },
+	            "search": {
+	                "mode": "match"
+	            }
+	        },
+	        {
+	            "link": [
+	                {
+	                    "relation": "self",
+	                    "url": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3"
+	                }
+	            ],
+	            "fullUrl": "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+	            "resource": {
+	                "resourceType": "Encounter",
+	                "id": "etPlPSTi-Ck8pFW0vJgBA3",
+	                "identifier": [
+	                    {
+	                        "use": "usual",
+	                        "system": "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+	                        "value": "8700006468"
+	                    },
+	                    {
+	                        "use": "usual",
+	                        "type": {
+	                            "text": "billing-number"
+	                        },
+	                        "system": "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.17",
+	                        "value": "8700006468"
+	                    }
+	                ],
+	                "status": "arrived",
+	                "class": {
+	                    "system": "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+	                    "code": "5",
+	                    "display": "Appointment"
+	                },
+	                "type": [
+	                    {
+	                        "coding": [
+	                            {
+	                                "system": "urn:oid:1.2.840.114350.1.13.20.3.7.10.698084.30",
+	                                "code": "50",
+	                                "display": "Appointment"
+	                            }
+	                        ],
+	                        "text": "Appointment"
+	                    },
+	                    {
+	                        "coding": [
+	                            {
+	                                "system": "urn:oid:1.2.840.114350.1.13.20.3.7.2.808267",
+	                                "code": "3044",
+	                                "display": "BIOLOGIC"
+	                            }
+	                        ],
+	                        "text": "BIOLOGIC"
+	                    }
+	                ],
+	                "subject": {
+	                    "reference": "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+	                    "display": "Test, Healthchart"
+	                },
+	                "participant": [
+	                    {
+	                        "type": [
+	                            {
+	                                "coding": [
+	                                    {
+	                                        "system": "http://hl7.org/fhir/v3/ParticipationType",
+	                                        "code": "REF",
+	                                        "display": "referrer"
+	                                    }
+	                                ],
+	                                "text": "referrer"
+	                            }
+	                        ],
+	                        
+	                    },
+	                    {
+	                        "period": {
+	                            "start": "2023-05-25T14:00:00Z",
+	                            "end": "2023-05-25T14:30:00Z"
+	                        },
+	                        
+	                    }
+	                ],
+	                "period": {
+	                    "start": "2023-05-25T14:00:00Z",
+	                    "end": "2023-05-25T14:30:00Z"
+	                },
+	                "location": [
+	                    {
+	                        "location": {
+	                            "reference": "Location/44319902",
+	                            "display": "Buerger Center Allergy"
+	                        }
+	                    }
+	                ]
+	            },
+	            "search": {
+	                "mode": "match"
+	            },
+	            
 	        },
 	        {
 	            resource: {
 	              resourceType: "Encounter",
-	              id: 3,
-	              status:'in-progress',
-	              
-	              period:{
-	                start:"2023-08-10T10:00:00",
-	                end:"2023-08-15T18:30:00"
-	              },
-	              identifier:[
-	                {
-	                    system:'.7.3.698084.8',
-	                    value:'value',
-	    
-	                }
-	              ],
-	              type:[
-	                {
-	                    coding:[
-	                        {
-	                            system:".7.10.698084.10110",
-	                            code:'1',
-	                            display:''
-	                        }
-	                    ]
-	                }
-	              ]
+	              id: 1,
+	              status:'unknown'
 	            },
 	          },
 	          {
-	            resource: {
-	              resourceType: "Encounter",
-	              id: 4,
-	              status:'in-progress',
-	              
-	              period:{
-	                start:"2023-08-10T10:00:00",
-	                end:"2023-08-15T18:30:00"
-	              },
-	              identifier:[
-	                {
-	                    system:'.7.3.698084.8',
-	                    value:'value',
-	    
-	                }
-	              ],
-	              type:[
-	                {
-	                    coding:[
-	                        {
-	                            system:".7.10.698084.10110",
-	                            code:'5',
-	                            display:'Florida'
-	                        }
-	                    ]
-	                }
-	              ]
-	            },
-	          },
-	          {
-	            resource: {
-	              resourceType: "Encounter",
-	              id: 5,
-	              status:'in-progress',
-	              
-	              period:{
-	                start:"2023-08-10T10:00:00",
-	                end:"2023-08-15T18:30:00"
-	              },
-	              identifier:[
-	                {
-	                    system:'.7.3.698084.8',
-	                    value:'value',
-	    
-	                }
-	              ],
-	              type:[
-	                {
-	                    coding:[
-	                        {
-	                            system:".7.10.698084.10110",
-	                            code:'3',
-	                            display:'Florida'
-	                        }
-	                    ]
-	                }
-	              ]
-	            },
-	          },
-	      {
-	        resource: {
-	          resourceType: "Location",
-	          id: 2,
-	          name: "name",
-	          extension: [
-	            {
-	              valueCodeableConcept: {
-	                coding: [
+	              resource: {
+	                resourceType: "Encounter",
+	                id: 2,
+	                status:'arrived',
+	                
+	                period:{
+	                  start:"2023-08-10T10:00:00",
+	                  end:"2023-08-15T18:30:00"
+	                },
+	                identifier:[
 	                  {
-	                    system: "",
-	                    code: 34,
-	                    display: "something display",
-	                  },
+	                      system:'.7.3.698084.8',
+	                      value:'value',
+	      
+	                  }
 	                ],
+	                type:[
+	                  {
+	                      coding:[
+	                          {
+	                              system:".7.10.698084.30",
+	                              code:'3',
+	                              display:''
+	                          }
+	                      ]
+	                  }
+	                ]
 	              },
 	            },
-	          ],
-	        },
-	      },
-	      {
-	        resource: {
-	          resourceType: "Location",
-	          id: 3,
-	          name: "name",
-	          identifier: [{ value: "random value" }],
-	        },
-	      },
-	    ],
-	  };
+	            {
+	                resource: {
+	                  resourceType: "Encounter",
+	                  id: 3,
+	                  status:'in-progress',
+	                  
+	                  period:{
+	                    start:"2023-08-10T10:00:00",
+	                    end:"2023-08-15T18:30:00"
+	                  },
+	                  identifier:[
+	                    {
+	                        system:'.7.3.698084.8',
+	                        value:'value',
+	        
+	                    }
+	                  ],
+	                  type:[
+	                    {
+	                        coding:[
+	                            {
+	                                system:".7.10.698084.10110",
+	                                code:'1',
+	                                display:''
+	                            }
+	                        ]
+	                    }
+	                  ]
+	                },
+	              },
+	              {
+	                resource: {
+	                  resourceType: "Encounter",
+	                  id: 4,
+	                  status:'in-progress',
+	                  
+	                  period:{
+	                    start:"2023-01-10T10:00:00",
+	                    end:"2023-01-15T18:30:00"
+	                  },
+	                  identifier:[
+	                    {
+	                        system:'.7.3.698084.8',
+	                        value:'value',
+	        
+	                    }
+	                  ],
+	                  type:[
+	                    {
+	                        coding:[
+	                            {
+	                                system:".7.10.698084.10110",
+	                                code:'5',
+	                                display:'Florida'
+	                            }
+	                        ]
+	                    }
+	                  ]
+	                },
+	              },
+	              {
+	                resource: {
+	                  resourceType: "Encounter",
+	                  id: 5,
+	                  status:'in-progress',
+	                  
+	                  period:{
+	                    start:"2022-08-10T10:00:00",
+	                    end:"2022-08-15T18:30:00"
+	                  },
+	                  identifier:[
+	                    {
+	                        system:'.7.3.698084.8',
+	                        value:'value',
+	        
+	                    }
+	                  ],
+	                  type:[
+	                    {
+	                        coding:[
+	                            {
+	                                system:".7.10.698084.10110",
+	                                code:'3',
+	                                display:'Florida'
+	                            }
+	                        ]
+	                    }
+	                  ]
+	                },
+	              },
+	          {
+	            resource: {
+	              resourceType: "Location",
+	              id: 2,
+	              name: "name",
+	              extension: [
+	                {
+	                  valueCodeableConcept: {
+	                    coding: [
+	                      {
+	                        system: "",
+	                        code: 34,
+	                        display: "something display",
+	                      },
+	                    ],
+	                  },
+	                },
+	              ],
+	            },
+	          },
+	          {
+	            resource: {
+	              resourceType: "Location",
+	              id: 3,
+	              name: "name",
+	              identifier: [{ value: "random value" }],
+	            },
+	          },
+	    ]
+	};
 
 	// Obtain EHR token
 	var ehrToken;
@@ -16317,6 +16688,17 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	};
 
 	var today = new Date();
+	var _invalidStatus = "unknown";
+	var _locationFilteringParameter = {
+	  codingSystem: ".7.10.688867.4150",
+	  idSystem:".7.2.686980",
+	};
+	var _encounterType = {
+	  systemIdForContactType: ".7.10.698084.30",
+	  systemIdForAdtClass: ".7.10.698084.10110"
+	};
+	var _validStatus = { arrived: 1, finished: 1, "in-progress": 1, triaged: 1, planned: 1 };
+	var _csnMappingParameter = ".7.3.698084.8";
 	var rowMap$1 = (chartConfig.rowMap = {});
 	chartConfig.rows.forEach(function (v, i) {
 	  chartConfig.rowMap[v.name] = i;
@@ -16325,7 +16707,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	// currently we are using mock data for that
 	function visitApiCall() {
 	  var result = new Promise((resolve, reject) => {
-	    resolve(myData);
+	    resolve(visitsData$1);
 	  });
 	  return result;
 	}
@@ -16337,6 +16719,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    if (enc.resource.resourceType == "Encounter") {
 	      encounters.push(enc.resource);
 	    } else if (enc.resource.resourceType == "Location") {
+	    
 	      locations.push(enc.resource);
 	    }
 	  });
@@ -16353,8 +16736,8 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	      v.extension.forEach(function (ext, i) {
 	        ext.valueCodeableConcept.coding.forEach(function (coding, j) {
 	          if (
-	            locationMap[v.id] === undefined &&
-	            coding.system.indexOf(".7.10.688867.4150") >= 0
+	            !locationMap[v.id] &&
+	            coding.system.indexOf(_locationFilteringParameter.codingSystem) >= 0
 	          ) {
 	            locationMap[v.id] = {
 	              name: v.name,
@@ -16367,10 +16750,10 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    }
 	    if (v.identifier) {
 	      v.identifier.forEach(function (id, i) {
-	        if (locationMap[v.id] === undefined) {
+	        if (!locationMap[v.id]) {
 	          locationMap[v.id] = {};
 	        }
-	        if (id.system && id.system.indexOf(".7.2.686980") >= 0) {
+	        if (id.system && id.system.indexOf(_locationFilteringParameter.idSystem) >= 0) {
 	          locationMap[v.id].internalId = id.value;
 	        }
 	      });
@@ -16382,13 +16765,13 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 
 	function checkStatus(resource) {
 	  
-	  if (resource.status == "unknown") {
+	  if (resource.status == _invalidStatus) {
 	    return false;
 	  }
 	  if (
 	    !(
 	      resource.status in
-	      { arrived: 1, finished: 1, "in-progress": 1, triaged: 1, planned: 1 }
+	      _validStatus
 	    )
 	  ) {
 	    return false;
@@ -16440,7 +16823,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 
 	// to check whether the resource is already
 	function checkExitingResource(encMap, resource) {
-	  console.log("check",encMap);
+	  // console.log("check",encMap)
 	  if (encMap[resource.id]) {
 	    return false;
 	  }
@@ -16468,14 +16851,14 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	      Type: {},
 	    },
 	  };
-
+	//  console.log("mydetailsmap",encMap)
 	  return encMap;
 	}
 	// Obtain contact serial number (EHR encounter ID)
 	function mapCsn(csnList,csnToFhirIdMap,encMap,resource){
-	  console.log("mapcsn",encMap);
+	  // console.log("mapcsn",encMap)
 	    resource.identifier.forEach(function (id, j) {
-	        if (id.system.indexOf(".7.3.698084.8") >= 0) {
+	        if (id.system.indexOf(_csnMappingParameter) >= 0) {
 	          // Add csn to encounter object
 	          resource.csn = id.value;
 	          encMap[resource.id]._csn = resource.csn;
@@ -16494,10 +16877,10 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	function encTypeAndClass(resource) {
 	  resource.type.forEach(function (type) {
 	    type.coding.forEach(function (v) {
-	      if (v.system.indexOf(".7.10.698084.30") >= 0) {
+	      if (v.system.indexOf(_encounterType.systemIdForContactType) >= 0) {
 	        resource.contactType = +v.code;
 	        resource.contactName = v.display;
-	      } else if (v.system.indexOf(".7.10.698084.10110") >= 0) {
+	      } else if (v.system.indexOf(_encounterType.systemIdForAdtClass) >= 0) {
 	        resource.adtClass = +v.code;
 	        resource.adtClassName = v.display;
 	      }
@@ -16549,9 +16932,10 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	}
 
 	// here we will classify which type of visit and add it to the data
-	function checkAndAddAdmission(encMap, resource) {
+	function checkAndAddAdmission(encMap,locationMap, resource) {
 	  if ([1, 5].indexOf(resource.adtClass) >= 0) {
 	    // Add details about the encounter to the encounter map
+	    
 	    encMap[resource.id].row = resource.row = "Inpatient";
 	    resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
 	    encMap[resource.id].detailMap.Type.value = resource.adtClassName;
@@ -16562,9 +16946,36 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	      value: resource.adtClassName,
 	    });
 	    // Check for ICU stays
+	         // Check for ICU stays
+	            if (resource.location) {
+	                // Get location name
+	                resource.location.forEach(function(loc, i) {
+	                    // Verify the location has a "period" key
+	                    if (loc.period && loc.location.reference) {
+	                        var locationId = loc.location.reference.replace("Location/", "");
+	                        if (
+	                            chartConfig.icuList &&
+	                            locationMap[locationId] &&
+	                            locationMap[locationId].internalId &&
+	                            chartConfig.icuList.indexOf(locationMap[locationId].internalId) !== -1
+	                        ) {
+	                            // Add metadata and change the color and shape based
+	                            // on the value defined in the legend
+	                            encMap[resource.id].detailMap["ICU Visit"] = {
+	                                highlight: true
+	                            };
+	                            resource._icu = true;
+	                            resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.alt.shape;
+	                            resource.color = chartConfig.rows[rowMap$1[resource.row]].legend.alt.color;
+	                        }
+	                    }
+	                });
+	            }
 
 	    // Check for "emergency" visit
-	  } else if (resource.adtClass == 3) {
+	  } 
+	  // console.log("jhskjfhds",resource)
+	  else if (resource.adtClass == 3) {
 	    // Check if this is an encounter we should plot
 	    //   getEncDiagnosis(resource, deferred);
 
@@ -16580,7 +16991,8 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    });
 
 	    // Process all other visits
-	  } else {
+	  }
+	   else {
 	    // Set visit type
 	    encMap[resource.id].detailMap.Type.value =
 	      resource.contactName || resource.adtClassName;
@@ -16613,32 +17025,85 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	        };
 	        resource.deptId = loc.location.reference.replace("Location/", "");
 	      });
-	    } else {
+	    } 
+	    else {
 	      encMap[resource.id].detailMap.Location = {
 	        value: "Unknown",
 	      };
 	    }
-	    if (resource.adtClass == 4) {
-	      encMap[resource.id].row = resource.row = "Allergy";
-	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
-	    }
-	    if (resource.adtClass == 82) {
-	      encMap[resource.id].row = resource.row = "Primary Care";
-	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
-	    }
-	    if (resource.adtClass == 105) {
-	      encMap[resource.id].row = resource.row = "Emergency Only";
-	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
-	    }
-	    if (resource.adtClass == 110) {
-	      encMap[resource.id].row = resource.row = "Pulmonary";
-	      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.base.shape;
-	    }
+	    var result =isValidLocation(encMap,resource,locationMap);
+	    encMap= result.encMap;
+	    resource = result.resource;
+	    if (!result.condition) {
+	                      return false;
+	                  }
+	    if (resource.contactType == 3) {
+	                      // Add encounter to the acute care list, which will be used to obtain
+	                      // medication administration records.
+	                      acuteCareList.push(resource);
+	                      encMap[resource.id].detailMap.Type.value = "Urgent Care";
+	                      resource._uc = true;
+	                      resource.shape = chartConfig.rows[rowMap$1[resource.row]].legend.alt.shape;
+	                  } else if (resource.contactType != 101) {
+	                      return false;
+	                  }
+	      
+	                  // Add location to hover details
+	                  resource.hoverDetails.push({
+	                      key: "Location",
+	                      value: resource.fullLocationName
+	                  });
 	  }
+	  // console.log('helloqeqwe')
+
 
 	  return resource
 	}
 
+
+	function isValidLocation(encMap,resource,locationMap) {
+	      
+	      // if (locationMap[resource.deptId]) {
+	      //     internalId = locationMap[resource.deptId].internalId;
+	      // }
+	  
+	      // // Check if this department should be ignored
+	      // if (internalId && chartConfig.ignoredDepts && chartConfig.ignoredDepts[internalId]) {
+	      //     return false;
+	      // }
+	  
+	      // // // Check for organization specific filtering
+	      // if (chartConfig.orgDeptMap && chartConfig.orgDeptMap[internalId]) {
+	      //     encMap[resource.id].row = resource.row = chartConfig.orgDeptMap[internalId];
+	      //     return true;
+	      // }
+	   
+	      // // Use standardized mapping from FHIR service
+	      // console.log(locationMap[resource.deptId].code)
+	      if (locationMap[resource.deptId]) {
+	          switch(locationMap[resource.deptId].code) {
+	              case "3":
+	                  encMap[resource.id].row = resource.row = "Allergy";
+	                  resource.shape = "circle";
+	                  return {encMap,resource,condition:true};
+	              case "82":
+	                  encMap[resource.id].row = resource.row = "Primary Care";
+	                  resource.shape = "circle";
+	                  return {encMap,resource,condition:true};
+	              case "105":
+	                  // Urgent care visit, which are plotted under Emergency Only
+	                  encMap[resource.id].row = resource.row = "Emergency Only";
+	                  resource.shape = "circle";
+	                  return {encMap,resource,condition:true};
+	              case "110":
+	                  encMap[resource.id].row = resource.row = "Pulmonary";
+	                  resource.shape = "circle";
+	                  return {encMap,resource,condition:true};
+	          }
+	      }
+	      console.log("isvalid.ocation",resource);
+	      return {encMap,resource,condition:false};
+	  }
 	// Sorting encounter date map entries by CSN. May not be necessary anymore
 	// but possibly helpful when linking admins to encounters.
 	function sortEncDateMap(encDateMap) {
@@ -16672,7 +17137,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	var encDateMap$1 = {};
 	var csnList = [];
 	var csnToFhirIdMap = {};
-	var acuteCareList$1 = [];
+	var acuteCareList$2 = [];
 
 
 	var visitsData = visitApiCall();
@@ -16683,6 +17148,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    ({ encounters: encounters$1, locations: locations$1 } = encAndLocSep(encounters$1, locations$1, data.entry));
 	    console.log('locations: ',locations$1);
 	    locationMap$1 = filterLocations(locations$1, locationMap$1);
+	    console.log(locationMap$1);
 	  });
 	}
 	function getEncounters(){
@@ -16691,11 +17157,11 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    // console.log("ewejrkljelkr",encounters)
 	    
 	         encounters$1 = encounters$1.filter(function (resource) {
-	         console.log("resource.id",resource.id, checkStatus(resource));
+	        //  console.log("resource.id",resource.id, checkStatus(resource))
 	          if (!checkStatus(resource)) {
 	            return false;
 	          }
-	          console.log("hiiiii",resource);
+	         
 	          var { start, startStr, end, endStr } = createDate(resource);
 	          if(!checkDate(start,end)){
 	              return false
@@ -16707,7 +17173,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	          
 	          // console.log("fix",resource)
 	          encMap$1 = createDetailMap(encMap$1,start,end,startStr,resource);
-	          mapCsn(csnList, csnToFhirIdMap, encMap$1, resource);
+	          // const mapCsnResult = mapCsn(csnList, csnToFhirIdMap, encMap, resource);
 	          // ({ csnList, csnToFhirIdMap, encMap, resource } = mapCsnResult);
 
 	          //  console.log(hello)
@@ -16717,17 +17183,18 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	          encMap$1 = result.encMap;
 	          resource = result.resource;
 	          resource = encTypeAndClass(resource);
+	          // console.log("hello")
 	      
 	          encDateMap$1 = linkEncDateMap(encDateMap$1,startStr,endStr,resource);
-	          acuteCareList$1 = linkAcurateCareList(acuteCareList$1,resource);
+	          acuteCareList$2 = linkAcurateCareList(acuteCareList$2,resource);
 	          resource = createGroupAndHoverDetails(startStr,resource);
-	          resource = checkAndAddAdmission(encMap$1,resource);
+	          resource = checkAndAddAdmission(encMap$1,locationMap$1,resource);
 	          
 	          return true
 	        });
 	        encDateMap$1 = sortEncDateMap(encDateMap$1);
 	        console.log("insidecontroller",encounters$1);
-	        return encounters$1
+	        return {encounters: encounters$1,encMap: encMap$1}
 	      });
 	}
 
@@ -17082,7 +17549,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 
 	  // Stores encounter information for acute encounters. This is used to link administrations
 	  // to encounters. Also used as a fallback if an OP order couldn't be linked to an encounter.
-	  var acuteCareList = [];
+	  var acuteCareList$1 = [];
 
 	  var medAdminList = []; // List of order IDs to include in a payload to retrieve med admin info.
 	  var medAdminMap = {}; // Key is order ID. Maps individual administrations of an order to an encounter
@@ -17183,9 +17650,10 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 
 	  // Get data
 	  getVisitsData().then(function(data){
-	    console.log(data);
-	   encounters=data;
-	   console.log("herer",encounters);
+	    // console.log(data)
+	   encounters=data.encounters;
+	   encMap = data.encMap;
+	  //  console.log("herer",encounters)
 	  }).then(process,dataFail);
 	  // getPreliminaryData().then(function () {
 	  //   try {
