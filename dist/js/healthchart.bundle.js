@@ -15591,7 +15591,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  
 	  
 
-	const myData = {
+	const visitsData$1 = {
 	    "resourceType": "Bundle",
 	    "type": "searchset",
 	    "total": 47,
@@ -16707,7 +16707,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	// currently we are using mock data for that
 	function visitApiCall() {
 	  var result = new Promise((resolve, reject) => {
-	    resolve(myData);
+	    resolve(visitsData$1);
 	  });
 	  return result;
 	}

@@ -13507,7 +13507,7 @@
 	  
 	  
 
-	const myData = {
+	const visitsData$1 = {
 	    "resourceType": "Bundle",
 	    "type": "searchset",
 	    "total": 47,
@@ -14623,7 +14623,7 @@
 	// currently we are using mock data for that
 	function visitApiCall() {
 	  var result = new Promise((resolve, reject) => {
-	    resolve(myData);
+	    resolve(visitsData$1);
 	  });
 	  return result;
 	}

@@ -1,5 +1,5 @@
 import { resolve } from "core-js/fn/promise";
-import { myData } from "../data";
+import { visitsData } from "../data";
 import each from "lodash/each";
 var today = new Date();
 var _invalidStatus = "unknown"
@@ -22,7 +22,7 @@ chartConfig.rows.forEach(function (v, i) {
 // currently we are using mock data for that
 function visitApiCall() {
   var result = new Promise((resolve, reject) => {
-    resolve(myData);
+    resolve(visitsData);
   });
   return result;
 }

@@ -2,7 +2,7 @@
   
   
 
-export const myData = {
+export const visitsData = {
     "resourceType": "Bundle",
     "type": "searchset",
     "total": 47,
