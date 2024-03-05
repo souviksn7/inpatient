@@ -34,6 +34,7 @@ function dataSeparation() {
     ({ encounters, locations } = encAndLocSep(encounters, locations, data.entry));
     console.log('locations: ',locations)
     locationMap = filterLocations(locations, locationMap);
+    console.log(locationMap)
   });
 }
 function getEncounters(){
@@ -42,11 +43,11 @@ function getEncounters(){
     // console.log("ewejrkljelkr",encounters)
     
          encounters = encounters.filter(function (resource) {
-         console.log("resource.id",resource.id, checkStatus(resource))
+        //  console.log("resource.id",resource.id, checkStatus(resource))
           if (!checkStatus(resource)) {
             return false;
           }
-          console.log("hiiiii",resource)
+         
           var { start, startStr, end, endStr } = createDate(resource);
           if(!checkDate(start,end)){
               return false
@@ -58,7 +59,7 @@ function getEncounters(){
           
           // console.log("fix",resource)
           encMap = createDetailMap(encMap,start,end,startStr,resource)
-          const mapCsnResult = mapCsn(csnList, csnToFhirIdMap, encMap, resource);
+          // const mapCsnResult = mapCsn(csnList, csnToFhirIdMap, encMap, resource);
           // ({ csnList, csnToFhirIdMap, encMap, resource } = mapCsnResult);
 
           //  console.log(hello)
@@ -68,17 +69,18 @@ function getEncounters(){
           encMap = result.encMap
           resource = result.resource
           resource = encTypeAndClass(resource)
+          // console.log("hello")
       
           encDateMap = linkEncDateMap(encDateMap,startStr,endStr,resource)
           acuteCareList = linkAcurateCareList(acuteCareList,resource)
           resource = createGroupAndHoverDetails(startStr,resource)
-          resource = checkAndAddAdmission(encMap,resource)
+          resource = checkAndAddAdmission(encMap,locationMap,resource)
           
           return true
         });
         encDateMap = sortEncDateMap(encDateMap)
         console.log("insidecontroller",encounters)
-        return encounters
+        return {encounters,encMap}
       });
 }
 

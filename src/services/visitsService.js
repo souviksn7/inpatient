@@ -2,6 +2,17 @@ import { resolve } from "core-js/fn/promise";
 import { myData } from "../data";
 import each from "lodash/each";
 var today = new Date();
+var _invalidStatus = "unknown"
+var _locationFilteringParameter = {
+  codingSystem: ".7.10.688867.4150",
+  idSystem:".7.2.686980",
+}
+var _encounterType = {
+  systemIdForContactType: ".7.10.698084.30",
+  systemIdForAdtClass: ".7.10.698084.10110"
+}
+var _validStatus = { arrived: 1, finished: 1, "in-progress": 1, triaged: 1, planned: 1 }
+var _csnMappingParameter = ".7.3.698084.8"
 import chartConfig from "../../conf/healthchartConfig";
 var rowMap = (chartConfig.rowMap = {});
 chartConfig.rows.forEach(function (v, i) {
@@ -23,6 +34,7 @@ function encAndLocSep(encounters, locations, data) {
     if (enc.resource.resourceType == "Encounter") {
       encounters.push(enc.resource);
     } else if (enc.resource.resourceType == "Location") {
+    
       locations.push(enc.resource);
     }
   });
@@ -39,8 +51,8 @@ function filterLocations(locations, locationMap) {
       v.extension.forEach(function (ext, i) {
         ext.valueCodeableConcept.coding.forEach(function (coding, j) {
           if (
-            locationMap[v.id] === undefined &&
-            coding.system.indexOf(".7.10.688867.4150") >= 0
+            !locationMap[v.id] &&
+            coding.system.indexOf(_locationFilteringParameter.codingSystem) >= 0
           ) {
             locationMap[v.id] = {
               name: v.name,
@@ -53,10 +65,10 @@ function filterLocations(locations, locationMap) {
     }
     if (v.identifier) {
       v.identifier.forEach(function (id, i) {
-        if (locationMap[v.id] === undefined) {
+        if (!locationMap[v.id]) {
           locationMap[v.id] = {};
         }
-        if (id.system && id.system.indexOf(".7.2.686980") >= 0) {
+        if (id.system && id.system.indexOf(_locationFilteringParameter.idSystem) >= 0) {
           locationMap[v.id].internalId = id.value;
         }
       });
@@ -68,13 +80,13 @@ function filterLocations(locations, locationMap) {
 
 function checkStatus(resource) {
   
-  if (resource.status == "unknown") {
+  if (resource.status == _invalidStatus) {
     return false;
   }
   if (
     !(
       resource.status in
-      { arrived: 1, finished: 1, "in-progress": 1, triaged: 1, planned: 1 }
+      _validStatus
     )
   ) {
     return false;
@@ -126,7 +138,7 @@ function dateFromString(dte) {
 
 // to check whether the resource is already
 function checkExitingResource(encMap, resource) {
-  console.log("check",encMap)
+  // console.log("check",encMap)
   if (encMap[resource.id]) {
     return false;
   }
@@ -154,14 +166,14 @@ function createDetailMap(encMap,start,end,startStr, resource) {
       Type: {},
     },
   };
-
+//  console.log("mydetailsmap",encMap)
   return encMap;
 }
 // Obtain contact serial number (EHR encounter ID)
 function mapCsn(csnList,csnToFhirIdMap,encMap,resource){
-  console.log("mapcsn",encMap)
+  // console.log("mapcsn",encMap)
     resource.identifier.forEach(function (id, j) {
-        if (id.system.indexOf(".7.3.698084.8") >= 0) {
+        if (id.system.indexOf(_csnMappingParameter) >= 0) {
           // Add csn to encounter object
           resource.csn = id.value;
           encMap[resource.id]._csn = resource.csn;
@@ -180,10 +192,10 @@ function mapCsn(csnList,csnToFhirIdMap,encMap,resource){
 function encTypeAndClass(resource) {
   resource.type.forEach(function (type) {
     type.coding.forEach(function (v) {
-      if (v.system.indexOf(".7.10.698084.30") >= 0) {
+      if (v.system.indexOf(_encounterType.systemIdForContactType) >= 0) {
         resource.contactType = +v.code;
         resource.contactName = v.display;
-      } else if (v.system.indexOf(".7.10.698084.10110") >= 0) {
+      } else if (v.system.indexOf(_encounterType.systemIdForAdtClass) >= 0) {
         resource.adtClass = +v.code;
         resource.adtClassName = v.display;
       }
@@ -235,9 +247,10 @@ function createGroupAndHoverDetails(startStr, resource) {
 }
 
 // here we will classify which type of visit and add it to the data
-function checkAndAddAdmission(encMap, resource) {
+function checkAndAddAdmission(encMap,locationMap, resource) {
   if ([1, 5].indexOf(resource.adtClass) >= 0) {
     // Add details about the encounter to the encounter map
+    
     encMap[resource.id].row = resource.row = "Inpatient";
     resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
     encMap[resource.id].detailMap.Type.value = resource.adtClassName;
@@ -248,9 +261,36 @@ function checkAndAddAdmission(encMap, resource) {
       value: resource.adtClassName,
     });
     // Check for ICU stays
+         // Check for ICU stays
+            if (resource.location) {
+                // Get location name
+                resource.location.forEach(function(loc, i) {
+                    // Verify the location has a "period" key
+                    if (loc.period && loc.location.reference) {
+                        var locationId = loc.location.reference.replace("Location/", "");
+                        if (
+                            chartConfig.icuList &&
+                            locationMap[locationId] &&
+                            locationMap[locationId].internalId &&
+                            chartConfig.icuList.indexOf(locationMap[locationId].internalId) !== -1
+                        ) {
+                            // Add metadata and change the color and shape based
+                            // on the value defined in the legend
+                            encMap[resource.id].detailMap["ICU Visit"] = {
+                                highlight: true
+                            };
+                            resource._icu = true;
+                            resource.shape = chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
+                            resource.color = chartConfig.rows[rowMap[resource.row]].legend.alt.color;
+                        }
+                    }
+                });
+            }
 
     // Check for "emergency" visit
-  } else if (resource.adtClass == 3) {
+  } 
+  // console.log("jhskjfhds",resource)
+  else if (resource.adtClass == 3) {
     // Check if this is an encounter we should plot
     //   getEncDiagnosis(resource, deferred);
 
@@ -266,7 +306,8 @@ function checkAndAddAdmission(encMap, resource) {
     });
 
     // Process all other visits
-  } else {
+  }
+   else {
     // Set visit type
     encMap[resource.id].detailMap.Type.value =
       resource.contactName || resource.adtClassName;
@@ -299,32 +340,86 @@ function checkAndAddAdmission(encMap, resource) {
         };
         resource.deptId = loc.location.reference.replace("Location/", "");
       });
-    } else {
+    } 
+    else {
       encMap[resource.id].detailMap.Location = {
         value: "Unknown",
       };
     }
-    if (resource.adtClass == 4) {
-      encMap[resource.id].row = resource.row = "Allergy";
-      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
-    }
-    if (resource.adtClass == 82) {
-      encMap[resource.id].row = resource.row = "Primary Care";
-      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
-    }
-    if (resource.adtClass == 105) {
-      encMap[resource.id].row = resource.row = "Emergency Only";
-      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
-    }
-    if (resource.adtClass == 110) {
-      encMap[resource.id].row = resource.row = "Pulmonary";
-      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
-    }
+    var result =isValidLocation(encMap,resource,locationMap)
+    encMap= result.encMap
+    resource = result.resource
+    if (!result.condition) {
+                      return false;
+                  }
+    if (resource.contactType == 3) {
+                      // Add encounter to the acute care list, which will be used to obtain
+                      // medication administration records.
+                      acuteCareList.push(resource);
+                      encMap[resource.id].detailMap.Type.value = "Urgent Care";
+                      resource._uc = true;
+                      resource.shape = chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
+                  } else if (resource.contactType != 101) {
+                      return false;
+                  }
+      
+                  // Add location to hover details
+                  resource.hoverDetails.push({
+                      key: "Location",
+                      value: resource.fullLocationName
+                  });
   }
+  // console.log('helloqeqwe')
+
 
   return resource
 }
 
+
+function isValidLocation(encMap,resource,locationMap) {
+      var internalId;
+      
+      // if (locationMap[resource.deptId]) {
+      //     internalId = locationMap[resource.deptId].internalId;
+      // }
+  
+      // // Check if this department should be ignored
+      // if (internalId && chartConfig.ignoredDepts && chartConfig.ignoredDepts[internalId]) {
+      //     return false;
+      // }
+  
+      // // // Check for organization specific filtering
+      // if (chartConfig.orgDeptMap && chartConfig.orgDeptMap[internalId]) {
+      //     encMap[resource.id].row = resource.row = chartConfig.orgDeptMap[internalId];
+      //     return true;
+      // }
+   
+      // // Use standardized mapping from FHIR service
+      // console.log(locationMap[resource.deptId].code)
+      if (locationMap[resource.deptId]) {
+          switch(locationMap[resource.deptId].code) {
+              case "3":
+                  encMap[resource.id].row = resource.row = "Allergy";
+                  resource.shape = "circle"
+                  return {encMap,resource,condition:true};
+              case "82":
+                  encMap[resource.id].row = resource.row = "Primary Care";
+                  resource.shape = "circle"
+                  return {encMap,resource,condition:true};
+              case "105":
+                  // Urgent care visit, which are plotted under Emergency Only
+                  encMap[resource.id].row = resource.row = "Emergency Only";
+                  resource.shape = "circle"
+                  return {encMap,resource,condition:true};
+              case "110":
+                  encMap[resource.id].row = resource.row = "Pulmonary";
+                  resource.shape = "circle"
+                  return {encMap,resource,condition:true};
+          }
+      }
+      console.log("isvalid.ocation",resource)
+      return {encMap,resource,condition:false};
+  }
 // Sorting encounter date map entries by CSN. May not be necessary anymore
 // but possibly helpful when linking admins to encounters.
 function sortEncDateMap(encDateMap) {

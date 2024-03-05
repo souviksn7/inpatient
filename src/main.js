@@ -202,9 +202,10 @@ function buildApp() {
 
   // Get data
   getVisitsData().then(function(data){
-    console.log(data)
-   encounters=data
-   console.log("herer",encounters)
+    // console.log(data)
+   encounters=data.encounters
+   encMap = data.encMap
+  //  console.log("herer",encounters)
   }).then(process,dataFail)
   // getPreliminaryData().then(function () {
   //   try {
