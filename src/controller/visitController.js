@@ -24,6 +24,7 @@ var encDateMap = {};
 var csnList = [];
 var csnToFhirIdMap = {};
 var acuteCareList = [];
+var hospitalProblemMap = [];
 
 
 var visitsData = visitApiCall();
@@ -32,9 +33,9 @@ function dataSeparation() {
   return visitsData.then(function (data) {
     
     ({ encounters, locations } = encAndLocSep(encounters, locations, data.entry));
-    console.log('locations: ',locations)
+    // console.log('locations: ',locations)
     locationMap = filterLocations(locations, locationMap);
-    console.log(locationMap)
+    // console.log(locationMap)
   });
 }
 function getEncounters(){
@@ -74,12 +75,12 @@ function getEncounters(){
           encDateMap = linkEncDateMap(encDateMap,startStr,endStr,resource)
           acuteCareList = linkAcurateCareList(acuteCareList,resource)
           resource = createGroupAndHoverDetails(startStr,resource)
-          resource = checkAndAddAdmission(encMap,locationMap,resource)
+          resource = checkAndAddAdmission(hospitalProblemMap,encMap,locationMap,resource)
           
           return true
         });
         encDateMap = sortEncDateMap(encDateMap)
-        console.log("insidecontroller",encounters)
+        // console.log("insidecontroller",encounters)
         return {encounters,encMap}
       });
 }

@@ -7,6 +7,7 @@ import { visitsData } from "./data.js";
 var encountersconfig = visitsData;
 // console.log(encountersconfig)
 import { getVisitsData } from "./controller/visitController.js";
+import { getMedicationData } from "./controller/medicationController.js";
 
 // Internal imports
 import chartConfig from "../conf/healthchartConfig.js";
@@ -115,7 +116,7 @@ try {
   chartConfig.rows.forEach(function (v, i) {
     chartConfig.rowMap[v.name] = i;
   });
-  console.log(rowMap);
+  // console.log(rowMap);
 
   // Initialize app
   init();
@@ -199,6 +200,9 @@ function buildApp() {
   // in all versions of IE.
   // console.log("build , ", encounters)
   requestTime = Date ? Date.now() : new Date();
+  getMedicationData().then(function(data){
+    console.log("This is medication data: ", data)
+  })
 
   // Get data
   getVisitsData().then(function(data){
@@ -251,7 +255,7 @@ function process() {
     // Build visualization
     render();
   } catch (error) {
-    console.log("chat fail");
+    // console.log("chat fail");
     chart.failure = true;
     failureSplash();
     log(error.stack, "error");
@@ -269,7 +273,7 @@ function render() {
 
   // Convert detailMap in encInfo to a list
   // Required for the healthchart library
-  console.log(encMap);
+  // console.log(encMap);
   each(encMap, function (enc) {
     enc.details = [];
     chartConfig.detailsOrder.forEach(function (k) {
@@ -288,7 +292,7 @@ function render() {
     });
     delete enc.detailMap;
   });
-  console.log("render");
+  // console.log("render");
 
   // Pass encounter detail info as a map
   // Reduces the footprint of the application
@@ -298,7 +302,7 @@ function render() {
   // Places the data points in the appropriate section
   // Doing this later to allow for potential filtering
   // after all data has come in
-  console.log("render",encounters)
+  // console.log("render",encounters)
   encounters.forEach(function (v) {
   
     // console.log("chartConfig",chartConfig.rows)
@@ -312,7 +316,7 @@ function render() {
     }
     // chartConfig.rows[rowMap[v.row]].data.push(v);
   });
-  console.log("chartConfig",chartConfig.rows)
+  // console.log("chartConfig",chartConfig.rows)
   // medPlot.forEach(function(v) {
   //     chartConfig.rows[rowMap[v.row]].data.push(v);
   // });
