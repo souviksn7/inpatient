@@ -1,5 +1,6 @@
 import { resolve } from "core-js/fn/promise";
 import { visitsData } from "../data";
+import { search } from "../http";
 import each from "lodash/each";
 var today = new Date();
 var _invalidStatus = "unknown"
@@ -29,7 +30,7 @@ function visitApiCall() {
 
 // this is used to separate location and encounter on the basis of data
 function encAndLocSep(encounters, locations, data) {
-    console.log("service",data)
+    // console.log("service",data)
   data.forEach(function (enc) {
     if (enc.resource.resourceType == "Encounter") {
       encounters.push(enc.resource);
@@ -247,9 +248,61 @@ function createGroupAndHoverDetails(startStr, resource) {
 }
 
 // here we will classify which type of visit and add it to the data
-function checkAndAddAdmission(encMap,locationMap, resource) {
+function checkAndAddAdmission(hospitalProblemMap,encMap,locationMap, resource) {
   if ([1, 5].indexOf(resource.adtClass) >= 0) {
     // Add details about the encounter to the encounter map
+    if (hospitalProblemMap[resource.id]) {
+                      hospitalProblemMap[resource.id].forEach(function (reference) {
+                          deferred.push(search("FHIR/R4/" + reference).then(function (condition, state, xhr) {
+                              try {
+                                  if (encMap[resource.id]._validDx) {
+                                      return false;
+                                  }
+                                  // TODO - Future state could consider capturing the data
+                                  // and processing later
+                                  if (condition.code) {
+                                      condition.code.coding.forEach(function (dx) {
+                                          if (asthmaDxRegex.test(dx.code)) {
+                                              encMap[resource.id]._validDx = true;
+                                          }
+                                          if (dx.text && croupDxRegex.test(dx.text)) {
+                                              encMap[resource.id]._croupDx = true;
+                                          }
+                                      });
+                                  }
+                              } catch (error) {
+                                  chart.failure = true;
+                                  log(error.stack, "error");
+                              }
+                          }));
+                      });
+                  }
+      var deferred =[]
+                  // Check for an encounter diagnosis if it exists to also
+                  // determine if this is an encounter we should plot
+                  deferred.push(
+                          search("FHIR/R4/Condition",
+                                  {
+                                      // patient: tokenResponse.patient,
+                                      // category: "encounter-diagnosis",
+                                      // encounter: resource.id
+                                  }
+                          ).then(function (encDx, state, xhr) {
+                      try {
+                          encDx.entry.forEach(function (entry) {
+                              if (encMap[resource.id]._validDx) {
+                                  return;
+                              }
+                              if (entry.resource.code) {
+                                  encMap[resource.id]._validDx = checkDx(entry.resource.code.coding);
+                              }
+                          });
+                      } catch (error) {
+                          chart.failure = true;
+                          log(error.stack, "error");
+                      }
+                  }));
+      
     
     encMap[resource.id].row = resource.row = "Inpatient";
     resource.shape = chartConfig.rows[rowMap[resource.row]].legend.base.shape;
@@ -379,20 +432,20 @@ function checkAndAddAdmission(encMap,locationMap, resource) {
 function isValidLocation(encMap,resource,locationMap) {
       var internalId;
       
-      // if (locationMap[resource.deptId]) {
-      //     internalId = locationMap[resource.deptId].internalId;
-      // }
+      if (locationMap[resource.deptId]) {
+          internalId = locationMap[resource.deptId].internalId;
+      }
   
-      // // Check if this department should be ignored
-      // if (internalId && chartConfig.ignoredDepts && chartConfig.ignoredDepts[internalId]) {
-      //     return false;
-      // }
+      // Check if this department should be ignored
+      if (internalId && chartConfig.ignoredDepts && chartConfig.ignoredDepts[internalId]) {
+          return false;
+      }
   
-      // // // Check for organization specific filtering
-      // if (chartConfig.orgDeptMap && chartConfig.orgDeptMap[internalId]) {
-      //     encMap[resource.id].row = resource.row = chartConfig.orgDeptMap[internalId];
-      //     return true;
-      // }
+      // // Check for organization specific filtering
+      if (chartConfig.orgDeptMap && chartConfig.orgDeptMap[internalId]) {
+          encMap[resource.id].row = resource.row = chartConfig.orgDeptMap[internalId];
+          return true;
+      }
    
       // // Use standardized mapping from FHIR service
       // console.log(locationMap[resource.deptId].code)
@@ -417,7 +470,7 @@ function isValidLocation(encMap,resource,locationMap) {
                   return {encMap,resource,condition:true};
           }
       }
-      console.log("isvalid.ocation",resource)
+      // console.log("isvalid.ocation",resource)
       return {encMap,resource,condition:false};
   }
 // Sorting encounter date map entries by CSN. May not be necessary anymore
