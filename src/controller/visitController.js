@@ -14,7 +14,7 @@ import {
   checkAndAddAdmission,
   sortEncDateMap,
   mapCsn,
-} from "../services/visitsService";
+} from "../services/visitsService.js";
 
 var encounters = [];
 var locations = [];
