@@ -30,7 +30,10 @@ export default [
                 d3: 'd3',
                 healthchart: 'healthchart'
             },
+            
+         
         },
+        inlineDynamicImports: true,
         plugins: [
             resolve(),
             commonjs(),

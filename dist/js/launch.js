@@ -12366,6 +12366,39 @@
 	        // Get "iss" and "launch" params
 	        var iss = getUrlParameter("iss");
 	        var launch = getUrlParameter("launch");
+	        function base64UrlDecode(str) {
+	            // Add padding if needed and replace characters specific to base64url encoding
+	            str = str.replace(/-/g, '+').replace(/_/g, '/');
+	            while (str.length % 4) {
+	                str += '=';
+	            }
+	        
+	            // Decode base64
+	            return atob(str);
+	        }
+	        
+	        function decodeJwt(jwt) {
+	            const parts = jwt.split('.');
+	            
+	            if (parts.length !== 3) {
+	                throw new Error('Invalid JWT format');
+	            }
+	        
+	            const encodedPayload = parts[1];
+	            const decodedPayload = base64UrlDecode(encodedPayload);
+	        
+	            return JSON.parse(decodedPayload);
+	        }
+	        let decodedPayload;
+	        // Example usage
+	        const token = launch;  // Replace with your actual JWT
+	        try {
+	            decodedPayload = decodeJwt(token);
+	            
+	        } catch (err) {
+	            console.error('Error decoding JWT:', err.message);
+	        }
+	        
 
 	        if (!iss) {
 	            log("Failed to obtain iss parameter", "error");
@@ -12390,7 +12423,7 @@
 	        // Set redirect URI based on runtime environment
 	        if (urlParser.hostname && issMap[urlParser.hostname]) {
 	            redirectUri = issMap[urlParser.hostname].redirectUri;
-	            console.log(redirectUri);
+	            console.log(issMap[urlParser.hostname].redirectUri);
 	        }
 
 	        if (!redirectUri) {
@@ -12399,7 +12432,7 @@
 	        }
 
 	        // Set client ID based on build environment
-	        var clientId = "3ed56593-344b-449c-9f72-3fd110418159";
+	        var clientId = decodedPayload.client_id;
 
 	        // Initialize variable to store returned config
 	        var smartConfig;

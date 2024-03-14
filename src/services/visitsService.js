@@ -1,4 +1,4 @@
-import { resolve } from "core-js/fn/promise";
+
 import { visitsData } from "../data";
 import { search } from "../http";
 import each from "lodash/each";
