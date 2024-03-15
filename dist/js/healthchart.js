@@ -3,6 +3,10 @@
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
+	function getDefaultExportFromCjs (x) {
+		return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+	}
+
 	var jqueryExports = {};
 	var jquery = {
 	  get exports(){ return jqueryExports; },
@@ -13259,12 +13263,14 @@
 	 * _.merge(object, other);
 	 * // => { 'a': [{ 'b': 2, 'c': 3 }, { 'd': 4, 'e': 5 }] }
 	 */
-	createAssigner(function(object, source, srcIndex) {
+	var merge = createAssigner(function(object, source, srcIndex) {
 	  baseMerge(object, source, srcIndex);
 	});
 
+	var merge_1 = merge;
+
 	var eachExports = {};
-	var each = {
+	var each$1 = {
 	  get exports(){ return eachExports; },
 	  set exports(v){ eachExports = v; },
 	};
@@ -13493,7 +13499,9 @@
 
 	(function (module) {
 		module.exports = forEach_1;
-	} (each));
+	} (each$1));
+
+	var each = /*@__PURE__*/getDefaultExportFromCjs(eachExports);
 
 	// Obtain EHR token
 	var ehrToken;
@@ -13604,6 +13612,7 @@
 	}
 
 	// Date references
+	var today = new Date();
 
 	// Set token response variable
 	var tokenResponse;
@@ -13670,6 +13679,17 @@
 	            contentType: "application/json",
 	            timeout:2000
 	        });
+	    } catch (error) {}
+	}
+
+	function logD(message, level) {
+	    try {
+	        var tmpObj = {
+	            message: message,
+	            level: level || "debug"
+	        };
+
+	        logList.push(tmpObj);
 	    } catch (error) {}
 	}
 
@@ -14097,6 +14117,81 @@
 	    flushLogs();
 	}
 
+	// Used to extract the path and cache timestamp from the url
+	var urlRegex = /.*api\/(.*)/;
+
+	// Access token search function
+	function search(endpoint, data, method, headers) {
+	    try {
+	        method = method || "GET";
+
+	        // Build headers
+	        headers = headers || {};
+	        headers.Authorization = "Bearer " + tokenResponse.access_token;
+	        headers.accept = "application/json";
+
+	        // Initialize url variable
+	        var url;
+	        // Conditionally constructs endpoint based on the base URL
+	        if (endpoint.indexOf("chop.edu") >= 0) {
+	            url = endpoint;
+	        } else {
+	            url = state.baseUrl + endpoint;
+	        }
+
+	        // Get time object. Date.now() is more efficient, which is
+	        // why we attempt to get this first, but it is not available
+	        // in all versions of IE.
+	        var time = Date ? Date.now() : new Date();
+
+	        // Send request
+	        return jQuery.ajax({
+	            url: url,
+	            type: method,
+	            headers: headers,
+	            time: time,
+	            timeout: 20000,
+	            traditional: true,
+	            data: data,
+	            success: function(xhr) {
+	                // Only send metrics for Encounter and MedicationRequest requests
+	                if (this.url.indexOf("FHIR/R4/Encounter") === -1 && this.url.indexOf("FHIR/R4/MedicationRequest") === -1) {
+	                    return;
+	                }
+
+	                // Get time object. Date.now() is more efficient, which is
+	                // why we attempt to get this first, but it is not available
+	                // in all versions of IE.
+	                var endTime = Date ? Date.now() : new Date();
+
+	                // Extract path and cache timestamp from url
+	                var urlMatch = this.url.match(urlRegex);
+	                var tmpObj = {
+	                    "transaction.duration.ms": endTime - this.time
+	                };
+
+	                if (urlMatch) {
+	                    if (urlMatch[1]) {
+	                        tmpObj.path = urlMatch[1];
+	                    }
+	                }
+
+	                // Log transaction time for individual request
+	                // Uses logD to avoid holding up the current transactions
+	                logD(tmpObj, "info");
+	            },
+	            error: function(xhr, textStatus, errorThrown) {
+	                // Log the error here, but rely on the "then" fail function from the "when"
+	                // to determine if the application should fail
+	                log(this.type + " " + this.url + " " + xhr.status + " (" + (xhr.responseText || errorThrown) + ")", "error");
+	            }
+	        });
+	    } catch (error) {
+	        chartConfig.chart.failure = true;
+	        log(error.stack, "error");
+	    }
+	}
+
 	// Extract parameters from URL
 	function getUrlParameter(sParam) {
 	    var sPageURL = window.location.search.substring(1),
@@ -14192,6 +14287,94 @@
 	    }
 	}
 
+	// Set lookback days based on chart config values
+	Math.ceil((today.getTime() - chartConfig.chart.dates.contextStart.getTime()) / (1000 * 3600 * 24));
+
+	// List to hold care plans
+	var carePlans = [];
+
+	// Initialize list
+	var followedByList=[];
+
+	function countToRTF() {
+	    // Configure RTF
+	    var rtf = ["{\\b Asthma History (Past 12 Months):}\\par"];
+	    chartConfig.rows.forEach(function(v) {
+	        if (v.header && v.name != "Other") {
+	            rtf.push("{\\ul " + v.name + "}\\par");
+	        } else {
+	            if (v.name == "Inpatient") {
+	                rtf.push("{   \\bullet  Hospitalizations: " + v.count + (v.count ? " (" + v.legend.label + " " + v.legend.count + ")" : "") + "}\\par");
+	            } else if (v.name == "Emergency Only") {
+	                rtf.push("{   \\bullet  " + v.name + ": " + (v.count - v.legend.count) + "}\\par");
+	                rtf.push("{   \\bullet  Urgent Care: " + v.legend.count + "}\\par");
+	            } else if (v.name == "Systemic Steroid") {
+	                rtf.push("{   \\bullet  " + v.name + ": " + v.count + "}\\par");
+	            } else if (v.name == "Controller") {
+	                var yesNo = v.count > 0 ? "Yes" : "No";
+	                rtf.push("{   \\bullet  " + v.name + ": " + yesNo + "}\\par");
+	            }
+	        }
+	    });
+
+	    // Sort followedByList
+	    followedByList.sort();
+	    if (followedByList.length > 0) {
+	        var optionText = [followedByList.slice(0, -1).join(", ")];
+	        if (followedByList.length > 2) {
+	            optionText.push.apply(optionText, followedByList.slice(-1));
+	            optionText = optionText.join(", and ");
+	        } else if (followedByList.length > 1){
+	            optionText.push.apply(optionText, followedByList.slice(-1));
+	            optionText = optionText.join(" and ");
+	        } else {
+	            optionText = followedByList.join("");
+	        }
+	        rtf.push("{   \\par  Followed by " + optionText + "}\\par");
+	    }
+
+	    // Build request body
+	    var data = {
+	        "ContextName":"encounter",
+	        "EntityID":tokenResponse.patient,
+	        "EntityIDType":"FHIR",
+	        "ContactID":tokenResponse.csn,
+	        "ContactIDType":"CSN",
+	        "UserID":"ICAUTHP",
+	        "UserIDType":"External",
+	        "Source":"Web Service",
+	        "SmartDataValues": [
+	            {
+	                "SmartDataID":chartConfig.noteKey,
+	                "SmartDataIDType":"SDI",
+	                "Comments":[
+	                    "Value set from the HealthChart Asthma application."
+	                ],
+	                "Values":[
+	                    rtf.join("")
+	                ]
+	            }
+	        ]
+	    };
+
+	    // Store RTF in EHR key value store
+	    search("epic/2013/Clinical/Utility/SETSMARTDATAVALUES/SmartData/Values", JSON.stringify(data), "PUT",
+	        {
+	            "Content-Type": "application/json"
+	        }
+	    ).then(function(data, state, xhr) {
+	        try {
+	            // Adds check here to identify 'quiet' errors from the EHR, but most errors
+	            // will be handled by the 'error' callback in the ajax request.
+	            if (!data.Success || data.Errors.length !== 0 || xhr.status != 200) {
+	                log(this.type + " " + this.url + " " + xhr.status + " (" + JSON.stringify(data) + ")", "error");
+	            }
+	        } catch (error) {
+	            log(error.stack, "error");
+	        }
+	    });
+	}
+
 	// Extneral imports
 	// import { getVisits, getVisitsRemainingData, visitsProcess } from "./visits.js";
 
@@ -14250,12 +14433,12 @@
 	    // Build row location map based on chart config
 	    // Reduces iterations when pushing data since chartConfig.rows is an array
 
-	    // console.log("chartConfig in the beginning ", chartConfig);
+	    console.log("chartConfig in the beginning ", chartConfig);
 	    var rowMap = chartConfig.rowMap = {};
 	    chartConfig.rows.forEach(function(v, i) {
 	        chartConfig.rowMap[v.name] = i;
 	    });
-	    // console.log("rowMap ", rowMap);
+	    console.log("rowMap ", rowMap);
 	    // Initialize app 
 	    init();
 	} catch (error) {
@@ -14267,8 +14450,6 @@
 	// Initialize the application by extracting the state parameter
 	// and loading previous state
 	function init() {
-
-	  
 	    // Extract URL parameters to complete auth
 	    setStateKey(getUrlParameter("state"));
 
@@ -14305,8 +14486,6 @@
 	    // }
 
 	    // Check if an access token exists
-
-	    console.log(state,"state");
 	    if (state.tokenResponse) {
 	        // Update the token response with the previous state
 	        setTokenResponse(state.tokenResponse);
@@ -14315,14 +14494,13 @@
 	        state.baseUrl = (state.serverUrl.replace('FHIR/R4', ''));
 
 	        // Initialize app
-	        // console.log("I am in main file",tokenResponse)
-	        
-	        apiCall(tokenResponse,state);
+	        apiCall(tokenResponse,state,sessionStorage);
+	        // buildApp();
 	    } else {
 	        getAccessToken().then(function() {
 	            try {
-	                // console.log("I am in main file",tokenResponse)
-	                apiCall(tokenResponse,state);
+	                apiCall(tokenResponse,state,sessionStorage);
+	                // buildApp();
 	            } catch (error) {
 	               chart.failure = true;
 	               failureSplash();
@@ -14339,12 +14517,189 @@
 	}
 
 
-	function apiCall(tokenResponse,state){
+
+
+
+	function render() {
+	    // If a severity function exists, use it
+	    if (chartConfig.chart.severity.calculator) {
+	      chartConfig.chart.severity.calculator(chartConfig, true);
+	    }
+	    
+	    // Convert detailMap in encInfo to a list
+	    // Required for the healthchart library
+	    try{
+	        each(encMap, function(enc) {
+	            enc.details = [];
+	            chartConfig.detailsOrder.forEach(function(k) {
+	                if (enc.detailMap[k]) {
+	                    var tmp = merge_1( { label: k }, enc.detailMap[k]);
+	                    if (k in { "Full Visit Report": 1, "Asthma Care Plan": 1 }) {
+	                        console.log(new Date(enc._start));
+	                        tmp.label = k + " - " + stringFromDate(new Date(enc._start));
+	                    }
+	                    if (k == "Asthma Meds Ordered" || k == "Asthma Meds Administered") {
+	                        if (tmp.value.length === 0) {
+	                            tmp.value.push("None");
+	                        }
+	                    }
+	                    enc.details.push(tmp);
+	                }
+	            });
+	            delete enc.detailMap;
+	        });
+	    }catch(error){
+	        console.log(error);
+	    }
+
+	    console.log("hello");
+	    
+
+	    // Pass encounter detail info as a map
+	    // Reduces the footprint of the application
+	    chartConfig.chart.infoMap = encMap;
+
+	    // Places the data points in the appropriate section
+	    // Doing this later to allow for potential filtering
+	    // after all data has come in
+	    encounters.forEach(function(v) {
+	        chartConfig.rows[rowMap[v.row]].data.push(v);
+	    });
+	    medPlot.forEach(function(v) {
+	        chartConfig.rows[rowMap[v.row]].data.push(v);
+	    });
+	    carePlans.forEach(function(v) {
+	        chartConfig.rows[rowMap[v.row]].data.push(v);
+	    });
+	    // Generate note text
+	    countToRTF();
+
+	    if (typeof getLastFileDate === "function") {
+	        getLastFileDate();
+	    }
+
+	    // Set chart width based on the available space of the window
+	    // This will need to be changed based on the
+	    // location of the application in the EHR.
+	    windowWidth = window.innerWidth;
+	    chart.width = windowWidth - windowPadding > 1200 ? 1200 : windowWidth - windowPadding;
+	    // Limit div to the size of the chart to eliminate EHR scroll bars
+	    jQuery("#" + chartConfig.namespace).css("width", chart.width);
+	    if (chart.width < 785) {
+	        chart.details.width = 0;
+	    }
+
+	    // Instantiate timeline
+	    timeline = new healthchart.chart(chartConfig.namespace, chartConfig);
+
+	    // Log event that says the application was displayed
+	    log({"app.severity": chart.severity.level || "none"}, "info");
+
+	    // Add to timeline object
+	    timeline.log = log;
+
+	    // Overwrite healthchart "on" functions so I can log
+	    // when users are interacting with the timeline
+	    timeline.mouseover = function(elem, d) {
+	        // 'this' refers to the healthchart object
+	        if (this.hover) {
+	            return;
+	        }
+	        timeIn = new Date();
+	        this.hover = true;
+	        this.fade(elem, d);
+	        this.displayTooltip(elem, d);
+	    };
+
+	    timeline.mouseout = function(elem, d) {
+	        // 'this' refers to the healthchart object
+	        this.hover = false;
+	        this.unFade(elem, d);
+	        this.hideTooltip();
+	        if (timeIn && new Date() - timeIn > 500){
+	            log(d.row + " hover event.", "info");
+	        }
+	    };
+
+	    timeline.mousedown = function(elem, d) {
+	        log(d.row + " click event.", "info");
+	        this.target = healthchart.select(elem);
+	        this.connect(d);
+	        this.update(elem, d);
+	    };
+
+	    // Add listener to respond to the page width
+	    window.addEventListener("resize", resizeHealthChart);
+
+	    // Flush logs
+	    flushLogs();
+	}
+
+	// Implemented this since toLocaleDateString() was adding a significant
+	// amount of time in the EHR
+	function stringFromDate(dte) {
+	    // If date is null, return null
+	    if (!dte) {
+	        return null;
+	    }
+	    // Return date in MM/DD/YYYY format
+	    return dte.getMonth() + 1 + "/" + dte.getDate() + "/" + dte.getFullYear();
+	}
+
+	// Create function to respond to the page width
+	function resizeHealthChart(){
+	    try {
+	        if (!timeline) {
+	            return;
+	        }
+	        // Need to immediately remove the timeline so the page can resize appropriately
+	        timeline.remove();
+	        // Adds a timeout to allow the DOM to refresh to the new size
+	        setTimeout(function() {
+	            windowWidth = window.innerWidth;
+	            try {
+	                timeline.options.chart.width = windowWidth - windowPadding > 1200 ? 1200 : windowWidth - windowPadding;
+	                if (timeline.options.chart.width < 785) {
+	                    timeline.options.chart.details.width = 0;
+	                } else if (chart.details && chart.details.width) {
+	                    timeline.options.chart.details.width = chart.details.width;
+	                } else {
+	                    timeline.options.chart.details.width = healthchart.defaultOptions.chart.details.width;
+	                }
+	                // Limit div to the size of the chart to eliminate EHR scroll bars
+	                jQuery("#" + chartConfig.namespace).css("width", timeline.options.chart.width);
+	                timeline.resize();
+	            } catch (error) {
+	                chart.failure = true;
+	                failureSplash();
+	                log(error.stack, "error");
+	            }
+	        }, 500);
+	    } catch (error) {
+	        chart.failure = true;
+	        failureSplash();
+	        log(error.stack, "error");
+	    }
+	}
+
+	function apiCall(tokenResponse,state,sessionStorage){
+	    let sessionData = {};
+
+	// Iterate through all keys in sessionStorage
+	for (let i = 0; i < sessionStorage.length; i++) {
+	  const key = sessionStorage.key(i);
+	  const value = sessionStorage.getItem(key);
+
+	  // Add key-value pair to sessionData object
+	  sessionData[key] = value;
+	}
+	    console.log(sessionData,"session");
 	    console.log('tokee',state);
 	    var headers = {
 	        'Content-Type': 'application/json',
 	        'tokenResponse':JSON.stringify(tokenResponse),
-	        'state':JSON.stringify(state)
+	        'state':JSON.stringify(state),
+	        'sessionStorage':JSON.stringify(sessionData)
 	      };
 	      console.log(headers);
 	    fetch('http://localhost:3006/visits/getVisitData',
@@ -14362,7 +14717,17 @@
 	      .then(async (data) => {
 
 	        // Access the filename property from the first object in the array
-	        console.log(data);
+	        console.log(data.encMap);
+
+	        encounters = data.encounters || [];
+	        medPlot = data.medPlot || [];
+	        encMap = data.encMap || {};
+	        chartConfig.rows = data.chartConfig.rows;
+	        // // chartConfig.detailsOrder = data.chartConfig.detailsOrder
+	        // console.log(encMap,"encMap")
+
+	        
+	        render();
 	        // You can do whatever you need with the filename here
 	      })
 	      .catch(error => {

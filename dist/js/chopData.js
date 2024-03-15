@@ -30,8 +30,8 @@ import chartConfig from "../conf/healthchartConfig.js";
 // import { getUrlParameter, search } from "./http.js";
 
 // // Custom CHOP data
-// import customHosts from "./customHosts.js";
-// import { carePlans, getAsthmaActionPlan, getAsthmaCarePlan, filterCarePlans } from "./aap.js";
+import customHosts from "./customHosts.js";
+import { carePlans, getAsthmaActionPlan, getAsthmaCarePlan, filterCarePlans } from "./aap.js";
 // import { csnToDatMap, getEncDat } from "./dat.js";
 // import { filterExternalEncounters, getExternalEncounters } from "./hie.js";
 
@@ -70,26 +70,7 @@ try {
     var counterLookback = chartConfig.chart.dates.line;
     // var fhirLookback = "gt" + chartConfig.chart.dates.contextStart.toISOString().slice(0,10);
 
-    // Patient data
-    var encounters = []; // Relevant patient encounter information. Passed to HealthChart
-    var medPlot = []; // Relevant medication information. Passed to HealthChart
-    var locations = []; // Results from the "_include=Encounter:Location" parameter in the encounter request. Not passed to HealthChart
-    var fhirMeds = []; // Temporary storage for the FHIR MedicationRequest response
 
-    var locationMap = {}; // Key is FHIR ID and includes information to filter location
-    var encMap = {}; // Key is FHIR ID and includes basic information about each encounter
-    var encDateMap = {}; // Key is date string. Used to map medications to encounters 
-    var medIdMap = {}; // Key is order ID. Used to store information about medications
-
-    // Stores encounter information for acute encounters. This is used to link administrations
-    // to encounters. Also used as a fallback if an OP order couldn't be linked to an encounter.
-    var acuteCareList = [];
-
-    var medAdminList = []; // List of order IDs to include in a payload to retrieve med admin info.
-    var medAdminMap = {}; // Key is order ID. Maps individual administrations of an order to an encounter
-
-    // Key is encounter FHIR ID. Stores hospital problems for resepective encounters.
-    var hospitalProblemMap = {};
 
     // Build row location map based on chart config
     // Reduces iterations when pushing data since chartConfig.rows is an array
@@ -200,45 +181,45 @@ function buildApp(tokenResponse) {
 
 }
 
-// function process() {
-//     try {
-//         // Get time object. Date.now() is more efficient, which is
-//         // why we attempt to get this first, but it is not available
-//         // in all versions of IE.
-//         var endTime = Date ? Date.now() : new Date();
+function process() {
+    try {
+        // Get time object. Date.now() is more efficient, which is
+        // why we attempt to get this first, but it is not available
+        // in all versions of IE.
+        var endTime = Date ? Date.now() : new Date();
 
-//         // Log total transaction time of all requests, which includes time related
-//         // to the deferred flows.
-//         logD({"transaction.total.duration.ms": endTime - requestTime} , "info");
+        // Log total transaction time of all requests, which includes time related
+        // to the deferred flows.
+        logD({"transaction.total.duration.ms": endTime - requestTime} , "info");
 
-//         // Display the failure message if something went wrong
-//         if (chart.failure) {
-//             failureSplash();
-//             return;
-//         }
+        // Display the failure message if something went wrong
+        if (chart.failure) {
+            failureSplash();
+            return;
+        }
 
-//         // Waiting until remaining data is back to link
-//         // medications to encounters;
-//         linkMedAdmin();
+        // Waiting until remaining data is back to link
+        // medications to encounters;
+        linkMedAdmin();
 
-//         // Build medication visualization object to pass to visualization library
-//         buildMedVisObj();
+        // Build medication visualization object to pass to visualization library
+        buildMedVisObj();
 
-//         // Post-process encounters after medications have been linked
-//         postFilterEncounters();
+        // Post-process encounters after medications have been linked
+        postFilterEncounters();
 
-//         // Filter external encounters
-//         filterExternalEncounters();
+        // Filter external encounters
+        filterExternalEncounters();
 
-//         // Build visualization
-//         render();
-//     } catch (error) {
-//         chart.failure = true;
-//         failureSplash();
-//         log(error.stack, "error");
-//         return;
-//     }
-// }
+        // Build visualization
+        render();
+    } catch (error) {
+        chart.failure = true;
+        failureSplash();
+        log(error.stack, "error");
+        return;
+    }
+}
 
 // function render() {
 //     // If a severity function exists, use it

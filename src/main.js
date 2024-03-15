@@ -94,12 +94,12 @@ try {
     // Build row location map based on chart config
     // Reduces iterations when pushing data since chartConfig.rows is an array
 
-    // console.log("chartConfig in the beginning ", chartConfig);
+    console.log("chartConfig in the beginning ", chartConfig);
     var rowMap = chartConfig.rowMap = {};
     chartConfig.rows.forEach(function(v, i) {
         chartConfig.rowMap[v.name] = i;
     });
-    // console.log("rowMap ", rowMap);
+    console.log("rowMap ", rowMap);
     // Initialize app 
     init();
 } catch (error) {
@@ -111,8 +111,6 @@ try {
 // Initialize the application by extracting the state parameter
 // and loading previous state
 function init() {
-
-  
     // Extract URL parameters to complete auth
     setStateKey(getUrlParameter("state"));
 
@@ -149,8 +147,6 @@ function init() {
     // }
 
     // Check if an access token exists
-
-    console.log(state,"state")
     if (state.tokenResponse) {
         // Update the token response with the previous state
         setTokenResponse(state.tokenResponse);
@@ -159,14 +155,13 @@ function init() {
         state.baseUrl = (state.serverUrl.replace('FHIR/R4', ''));
 
         // Initialize app
-        // console.log("I am in main file",tokenResponse)
-        
-        apiCall(tokenResponse,state)
+        apiCall(tokenResponse,state,sessionStorage)
+        // buildApp();
     } else {
         getAccessToken().then(function() {
             try {
-                // console.log("I am in main file",tokenResponse)
-                apiCall(tokenResponse,state)
+                apiCall(tokenResponse,state,sessionStorage)
+                // buildApp();
             } catch (error) {
                chart.failure = true;
                failureSplash();
@@ -183,12 +178,257 @@ function closeCB() {
 }
 
 
-function apiCall(tokenResponse,state){
+
+
+
+function render() {
+    // If a severity function exists, use it
+    if (chartConfig.chart.severity.calculator) {
+      chartConfig.chart.severity.calculator(chartConfig, true);
+    }
+    
+    // Convert detailMap in encInfo to a list
+    // Required for the healthchart library
+    try{
+        each(encMap, function(enc) {
+            enc.details = [];
+            chartConfig.detailsOrder.forEach(function(k) {
+                if (enc.detailMap[k]) {
+                    var tmp = merge( { label: k }, enc.detailMap[k]);
+                    if (k in { "Full Visit Report": 1, "Asthma Care Plan": 1 }) {
+                        console.log(new Date(enc._start))
+                        tmp.label = k + " - " + stringFromDate(new Date(enc._start));
+                    }
+                    if (k == "Asthma Meds Ordered" || k == "Asthma Meds Administered") {
+                        if (tmp.value.length === 0) {
+                            tmp.value.push("None");
+                        }
+                    }
+                    enc.details.push(tmp);
+                }
+            });
+            delete enc.detailMap;
+        });
+    }catch(error){
+        console.log(error)
+    }
+
+    console.log("hello")
+    
+
+    // Pass encounter detail info as a map
+    // Reduces the footprint of the application
+    chartConfig.chart.infoMap = encMap;
+
+    // Places the data points in the appropriate section
+    // Doing this later to allow for potential filtering
+    // after all data has come in
+    encounters.forEach(function(v) {
+        chartConfig.rows[rowMap[v.row]].data.push(v);
+    });
+    medPlot.forEach(function(v) {
+        chartConfig.rows[rowMap[v.row]].data.push(v);
+    });
+    carePlans.forEach(function(v) {
+        chartConfig.rows[rowMap[v.row]].data.push(v);
+    });
+    // Generate note text
+    countToRTF();
+
+    if (typeof getLastFileDate === "function") {
+        getLastFileDate();
+    }
+
+    // Set chart width based on the available space of the window
+    // This will need to be changed based on the
+    // location of the application in the EHR.
+    windowWidth = window.innerWidth;
+    chart.width = windowWidth - windowPadding > 1200 ? 1200 : windowWidth - windowPadding;
+    // Limit div to the size of the chart to eliminate EHR scroll bars
+    jQuery("#" + chartConfig.namespace).css("width", chart.width);
+    if (chart.width < 785) {
+        chart.details.width = 0;
+    }
+
+    // Instantiate timeline
+    timeline = new healthchart.chart(chartConfig.namespace, chartConfig);
+
+    // Log event that says the application was displayed
+    log({"app.severity": chart.severity.level || "none"}, "info");
+
+    // Add to timeline object
+    timeline.log = log;
+
+    // Overwrite healthchart "on" functions so I can log
+    // when users are interacting with the timeline
+    timeline.mouseover = function(elem, d) {
+        // 'this' refers to the healthchart object
+        if (this.hover) {
+            return;
+        }
+        timeIn = new Date();
+        this.hover = true;
+        this.fade(elem, d);
+        this.displayTooltip(elem, d);
+    };
+
+    timeline.mouseout = function(elem, d) {
+        // 'this' refers to the healthchart object
+        this.hover = false;
+        this.unFade(elem, d);
+        this.hideTooltip();
+        if (timeIn && new Date() - timeIn > 500){
+            log(d.row + " hover event.", "info");
+        }
+    };
+
+    timeline.mousedown = function(elem, d) {
+        log(d.row + " click event.", "info");
+        this.target = healthchart.select(elem);
+        this.connect(d);
+        this.update(elem, d);
+    };
+
+    // Add listener to respond to the page width
+    window.addEventListener("resize", resizeHealthChart);
+
+    // Flush logs
+    flushLogs();
+}
+
+/*****************************************************
+****************** HTTP Functions ********************
+******************************************************/
+
+
+/*****************************************************
+***************** Problem Functions ******************
+******************************************************/
+
+// Validates that each encounter discharge diagnosis set
+// includes asthma but not croup.
+function checkDx(dxList) {
+    var asthmaDx = false;
+    var croupDx = false;
+    dxList.forEach(function(dx) {
+        if (asthmaDxRegex.test(dx.code)) {
+            asthmaDx = true;
+        }
+        if (dx.text && croupDxRegex.test(dx.text)) {
+            croupDx = true;
+        }
+    });
+    return (asthmaDx && !croupDx);
+}
+
+/*****************************************************
+***************** EHR Communication ******************
+******************************************************/
+
+function visitReport(elem, data) {
+    try {
+        log(data.row + " encounter report click event.", "info");
+        executeAction({
+            action: "Epic.Clinical.Informatics.Web.LaunchActivity",
+            args: {
+                "ActivityKey":"REPORTVIEWER",
+                "Parameters":{
+                    "REPORTPROVIDER":"MR_REPORTS",
+                    "REPORTCONTEXT": "11^R99#,EPT," + tokenResponse.eptIdIn + "," + csnToDatMap[data._csn] + ",1"
+                }
+            }
+        });
+    } catch (error) {
+       log(error.stack, "error");
+    }
+}
+
+/*****************************************************
+********************** Utility ***********************
+******************************************************/
+
+function dateFromString(dte) {
+    // If date is null, return null
+    if (!dte) {
+        return null;
+    }
+    // If a time zone exists, but is midnight, break the date into parts
+    // and remove the timezone. This date form is typically passed for
+    // on demand outpatient support encounters like telephone or messaging.
+    if (dte.indexOf("T00:00:00Z") >= 0 || dte.indexOf("T") < 0) {
+        // Split date into parts to avoid issues with time zones
+        var dateParts = dte.split("T")[0].split("-");
+        // Use date written as intial start time. Month is zero indexed.
+        return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+    }
+    return new Date(dte);
+}
+
+// Implemented this since toLocaleDateString() was adding a significant
+// amount of time in the EHR
+function stringFromDate(dte) {
+    // If date is null, return null
+    if (!dte) {
+        return null;
+    }
+    // Return date in MM/DD/YYYY format
+    return dte.getMonth() + 1 + "/" + dte.getDate() + "/" + dte.getFullYear();
+}
+
+// Create function to respond to the page width
+function resizeHealthChart(){
+    try {
+        if (!timeline) {
+            return;
+        }
+        // Need to immediately remove the timeline so the page can resize appropriately
+        timeline.remove();
+        // Adds a timeout to allow the DOM to refresh to the new size
+        setTimeout(function() {
+            windowWidth = window.innerWidth;
+            try {
+                timeline.options.chart.width = windowWidth - windowPadding > 1200 ? 1200 : windowWidth - windowPadding;
+                if (timeline.options.chart.width < 785) {
+                    timeline.options.chart.details.width = 0;
+                } else if (chart.details && chart.details.width) {
+                    timeline.options.chart.details.width = chart.details.width;
+                } else {
+                    timeline.options.chart.details.width = healthchart.defaultOptions.chart.details.width;
+                }
+                // Limit div to the size of the chart to eliminate EHR scroll bars
+                jQuery("#" + chartConfig.namespace).css("width", timeline.options.chart.width);
+                timeline.resize();
+            } catch (error) {
+                chart.failure = true;
+                failureSplash();
+                log(error.stack, "error");
+            }
+        }, 500);
+    } catch (error) {
+        chart.failure = true;
+        failureSplash();
+        log(error.stack, "error");
+    }
+}
+
+function apiCall(tokenResponse,state,sessionStorage){
+    let sessionData = {};
+
+// Iterate through all keys in sessionStorage
+for (let i = 0; i < sessionStorage.length; i++) {
+  const key = sessionStorage.key(i);
+  const value = sessionStorage.getItem(key);
+
+  // Add key-value pair to sessionData object
+  sessionData[key] = value;
+}
+    console.log(sessionData,"session")
     console.log('tokee',state)
     var headers = {
         'Content-Type': 'application/json',
         'tokenResponse':JSON.stringify(tokenResponse),
-        'state':JSON.stringify(state)
+        'state':JSON.stringify(state),
+        'sessionStorage':JSON.stringify(sessionData)
       };
       console.log(headers)
     fetch('http://localhost:3006/visits/getVisitData',
@@ -206,7 +446,17 @@ function apiCall(tokenResponse,state){
       .then(async (data) => {
 
         // Access the filename property from the first object in the array
-        console.log(data)
+        console.log(data.encMap)
+
+        encounters = data.encounters || []
+        medPlot = data.medPlot || []
+        encMap = data.encMap || {}
+        chartConfig.rows = data.chartConfig.rows
+        // // chartConfig.detailsOrder = data.chartConfig.detailsOrder
+        // console.log(encMap,"encMap")
+
+        
+        render();
         // You can do whatever you need with the filename here
       })
       .catch(error => {
