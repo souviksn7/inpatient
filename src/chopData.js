@@ -413,23 +413,23 @@ function getPreliminaryData() {
     ));
   
     // souvik comment
-    // if (customHosts[sessionStorage.getItem("env")]) {
-    //     if (typeof getControlTool === "function") {
-    //         deferreds.push.apply(deferreds, getControlTool());
-    //     }
+    if (customHosts[sessionStorage.getItem("env")]) {
+        if (typeof getControlTool === "function") {
+            deferreds.push.apply(deferreds, getControlTool());
+        }
 
-    //     if (typeof getAsthmaActionPlan === "function") {
-    //         deferreds.push(getAsthmaActionPlan());
-    //     }
+        if (typeof getAsthmaActionPlan === "function") {
+            deferreds.push(getAsthmaActionPlan());
+        }
 
-    //     if (typeof getAsthmaCarePlan === "function") {
-    //         deferreds.push(getAsthmaCarePlan());
-    //     }
+        if (typeof getAsthmaCarePlan === "function") {
+            deferreds.push(getAsthmaCarePlan());
+        }
 
-    //     if (typeof getExternalEncounters === "function") {
-    //         deferreds.push(getExternalEncounters());
-    //     }
-    // }
+        if (typeof getExternalEncounters === "function") {
+            deferreds.push(getExternalEncounters());
+        }
+    }
 
     return jQuery.when.apply(jQuery, deferreds);
 }
