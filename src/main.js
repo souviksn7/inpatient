@@ -182,118 +182,124 @@ function closeCB() {
 
 
 function render() {
-    // If a severity function exists, use it
-    if (chartConfig.chart.severity.calculator) {
-      chartConfig.chart.severity.calculator(chartConfig, true);
-    }
-    
-    // Convert detailMap in encInfo to a list
-    // Required for the healthchart library
     try{
-        each(encMap, function(enc) {
-            enc.details = [];
-            chartConfig.detailsOrder.forEach(function(k) {
-                if (enc.detailMap[k]) {
-                    var tmp = merge( { label: k }, enc.detailMap[k]);
-                    if (k in { "Full Visit Report": 1, "Asthma Care Plan": 1 }) {
-                        console.log(new Date(enc._start))
-                        tmp.label = k + " - " + stringFromDate(new Date(enc._start));
-                    }
-                    if (k == "Asthma Meds Ordered" || k == "Asthma Meds Administered") {
-                        if (tmp.value.length === 0) {
-                            tmp.value.push("None");
-                        }
-                    }
-                    enc.details.push(tmp);
-                }
-            });
-            delete enc.detailMap;
-        });
-    }catch(error){
-        console.log(error)
+        if (chartConfig.chart.severity.calculator) {
+            chartConfig.chart.severity.calculator(chartConfig, true);
+          }
+          
+          // Convert detailMap in encInfo to a list
+          // Required for the healthchart library
+          try{
+              each(encMap, function(enc) {
+                  enc.details = [];
+                  chartConfig.detailsOrder.forEach(function(k) {
+                      if (enc.detailMap[k]) {
+                          var tmp = merge( { label: k }, enc.detailMap[k]);
+                          if (k in { "Full Visit Report": 1, "Asthma Care Plan": 1 }) {
+                              console.log(new Date(enc._start))
+                              tmp.label = k + " - " + stringFromDate(new Date(enc._start));
+                          }
+                          if (k == "Asthma Meds Ordered" || k == "Asthma Meds Administered") {
+                              if (tmp.value.length === 0) {
+                                  tmp.value.push("None");
+                              }
+                          }
+                          enc.details.push(tmp);
+                      }
+                  });
+                  delete enc.detailMap;
+              });
+          }catch(error){
+              console.log(error)
+          }
+      
+          console.log("hello")
+          
+      
+          // Pass encounter detail info as a map
+          // Reduces the footprint of the application
+          chartConfig.chart.infoMap = encMap;
+      
+          // Places the data points in the appropriate section
+          // Doing this later to allow for potential filtering
+          // after all data has come in
+          encounters.forEach(function(v) {
+              chartConfig.rows[rowMap[v.row]].data.push(v);
+          });
+          medPlot.forEach(function(v) {
+              chartConfig.rows[rowMap[v.row]].data.push(v);
+          });
+          carePlans.forEach(function(v) {
+              chartConfig.rows[rowMap[v.row]].data.push(v);
+          });
+          // Generate note text
+          countToRTF();
+      
+          if (typeof getLastFileDate === "function") {
+              getLastFileDate();
+          }
+      
+          // Set chart width based on the available space of the window
+          // This will need to be changed based on the
+          // location of the application in the EHR.
+          windowWidth = window.innerWidth;
+          chart.width = windowWidth - windowPadding > 1200 ? 1200 : windowWidth - windowPadding;
+          // Limit div to the size of the chart to eliminate EHR scroll bars
+          jQuery("#" + chartConfig.namespace).css("width", chart.width);
+          if (chart.width < 785) {
+              chart.details.width = 0;
+          }
+      
+          // Instantiate timeline
+          timeline = new healthchart.chart(chartConfig.namespace, chartConfig);
+      
+          // Log event that says the application was displayed
+          log({"app.severity": chart.severity.level || "none"}, "info");
+      
+          // Add to timeline object
+          timeline.log = log;
+      
+          // Overwrite healthchart "on" functions so I can log
+          // when users are interacting with the timeline
+          timeline.mouseover = function(elem, d) {
+              // 'this' refers to the healthchart object
+              if (this.hover) {
+                  return;
+              }
+              timeIn = new Date();
+              this.hover = true;
+              this.fade(elem, d);
+              this.displayTooltip(elem, d);
+          };
+      
+          timeline.mouseout = function(elem, d) {
+              // 'this' refers to the healthchart object
+              this.hover = false;
+              this.unFade(elem, d);
+              this.hideTooltip();
+              if (timeIn && new Date() - timeIn > 500){
+                  log(d.row + " hover event.", "info");
+              }
+          };
+      
+          timeline.mousedown = function(elem, d) {
+              log(d.row + " click event.", "info");
+              this.target = healthchart.select(elem);
+              this.connect(d);
+              this.update(elem, d);
+          };
+      
+          // Add listener to respond to the page width
+          window.addEventListener("resize", resizeHealthChart);
+      
+          // Flush logs
+          flushLogs();
     }
-
-    console.log("hello")
-    
-
-    // Pass encounter detail info as a map
-    // Reduces the footprint of the application
-    chartConfig.chart.infoMap = encMap;
-
-    // Places the data points in the appropriate section
-    // Doing this later to allow for potential filtering
-    // after all data has come in
-    encounters.forEach(function(v) {
-        chartConfig.rows[rowMap[v.row]].data.push(v);
-    });
-    medPlot.forEach(function(v) {
-        chartConfig.rows[rowMap[v.row]].data.push(v);
-    });
-    carePlans.forEach(function(v) {
-        chartConfig.rows[rowMap[v.row]].data.push(v);
-    });
-    // Generate note text
-    countToRTF();
-
-    if (typeof getLastFileDate === "function") {
-        getLastFileDate();
+    catch(error){
+        console.log("render",error)
     }
-
-    // Set chart width based on the available space of the window
-    // This will need to be changed based on the
-    // location of the application in the EHR.
-    windowWidth = window.innerWidth;
-    chart.width = windowWidth - windowPadding > 1200 ? 1200 : windowWidth - windowPadding;
-    // Limit div to the size of the chart to eliminate EHR scroll bars
-    jQuery("#" + chartConfig.namespace).css("width", chart.width);
-    if (chart.width < 785) {
-        chart.details.width = 0;
-    }
-
-    // Instantiate timeline
-    timeline = new healthchart.chart(chartConfig.namespace, chartConfig);
-
-    // Log event that says the application was displayed
-    log({"app.severity": chart.severity.level || "none"}, "info");
-
-    // Add to timeline object
-    timeline.log = log;
-
-    // Overwrite healthchart "on" functions so I can log
-    // when users are interacting with the timeline
-    timeline.mouseover = function(elem, d) {
-        // 'this' refers to the healthchart object
-        if (this.hover) {
-            return;
-        }
-        timeIn = new Date();
-        this.hover = true;
-        this.fade(elem, d);
-        this.displayTooltip(elem, d);
-    };
-
-    timeline.mouseout = function(elem, d) {
-        // 'this' refers to the healthchart object
-        this.hover = false;
-        this.unFade(elem, d);
-        this.hideTooltip();
-        if (timeIn && new Date() - timeIn > 500){
-            log(d.row + " hover event.", "info");
-        }
-    };
-
-    timeline.mousedown = function(elem, d) {
-        log(d.row + " click event.", "info");
-        this.target = healthchart.select(elem);
-        this.connect(d);
-        this.update(elem, d);
-    };
-
-    // Add listener to respond to the page width
-    window.addEventListener("resize", resizeHealthChart);
-
-    // Flush logs
-    flushLogs();
+    // If a severity function exists, use it
+  
 }
 
 /*****************************************************
@@ -412,6 +418,7 @@ function resizeHealthChart(){
 }
 
 function apiCall(tokenResponse,state,sessionStorage){
+    // console.log("healthcahrt",healthchart.dateMath)
     let sessionData = {};
 
 // Iterate through all keys in sessionStorage
@@ -428,7 +435,8 @@ for (let i = 0; i < sessionStorage.length; i++) {
         'Content-Type': 'application/json',
         'tokenResponse':JSON.stringify(tokenResponse),
         'state':JSON.stringify(state),
-        'sessionStorage':JSON.stringify(sessionData)
+        'sessionStorage':JSON.stringify(sessionData),
+       
       };
       console.log(headers)
     fetch('http://localhost:3006/visits/getVisitData',
@@ -446,14 +454,15 @@ for (let i = 0; i < sessionStorage.length; i++) {
       .then(async (data) => {
 
         // Access the filename property from the first object in the array
-        console.log(data.encMap)
 
-        encounters = data.encounters || []
+        console.log(data.encounters)
+
+        encounters = data.encounters 
         medPlot = data.medPlot || []
         encMap = data.encMap || {}
         chartConfig.rows = data.chartConfig.rows
-        // // chartConfig.detailsOrder = data.chartConfig.detailsOrder
-        // console.log(encMap,"encMap")
+        // chartConfig.detailsOrder = data.chartConfig.detailsOrder
+        console.log(encMap,"encMap")
 
         
         render();
