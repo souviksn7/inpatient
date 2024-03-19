@@ -16794,7 +16794,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	       
 	      };
 	      console.log(headers);
-	    fetch('http://localhost:3006/visits/getVisitData',
+	    fetch('http://localhost:3006/healthchart/gethealthchartData',
 	    {
 	        method: 'GET',
 	        headers: headers
