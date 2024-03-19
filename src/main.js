@@ -439,7 +439,7 @@ for (let i = 0; i < sessionStorage.length; i++) {
        
       };
       console.log(headers)
-    fetch('http://localhost:3006/visits/getVisitData',
+    fetch('http://localhost:3006/healthchart/gethealthchartData',
     {
         method: 'GET',
         headers: headers

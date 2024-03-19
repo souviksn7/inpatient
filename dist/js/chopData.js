@@ -9,7 +9,7 @@ import jQuery from "jquery";
 import chartConfig from "../conf/healthchartConfig.js";
 // // souvik comment
 // // import demo_confic from "../conf/visitConfig.js";
-
+// 
 // // EHR communication and session state
 // import { addEHRListener, ehrHandshake, executeAction, setEHRToken } from "./ehrComms.js";
 // import { getAndSetState, setStateKey, state, stateKey } from "./state.js";
@@ -32,7 +32,7 @@ import chartConfig from "../conf/healthchartConfig.js";
 // // Custom CHOP data
 import customHosts from "./customHosts.js";
 import { carePlans, getAsthmaActionPlan, getAsthmaCarePlan, filterCarePlans } from "./aap.js";
-// import { csnToDatMap, getEncDat } from "./dat.js";
+import { csnToDatMap, getEncDat } from "./dat.js";
 // import { filterExternalEncounters, getExternalEncounters } from "./hie.js";
 
 // // EHR note generation
