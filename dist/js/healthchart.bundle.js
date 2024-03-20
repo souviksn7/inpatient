@@ -16460,9 +16460,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	}
 
 	// Extneral imports
-	// import { getVisits, getVisitsRemainingData, visitsProcess } from "./visits.js";
 
-	// Wrap entire code within a try-catch to avoid potential EHR workflow issues
 	try {
 	    
 	    // Initialize timeline variable here to obtain access in other functions
@@ -16471,7 +16469,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    // Total time from start of first request to end of last request.
 	    // Added to provide better performance metrics that take into consideration
 	    // browser content download time.
-	    var requestTime;
+
 
 	    // Initialize variable to measure time in hover event
 	    var timeIn;
@@ -16484,35 +16482,14 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	    var chart = chartConfig.chart;
 
 	    // Regex patterns
-	    var asthmaDxRegex = /^493\.?|^J45\.?/i; // Used to identify asthma diagnoses
-	    var croupDxRegex = /croup|laryngotracheobronchitis/i; // Used to identify croup diagnoses
-	    var truncateMedRegex = /^([^\d]*)\d+/; // Used to get medication name only (removes strength, route, form, etc.)
-	    var albuterolRegex = /accuneb|proair|ventolin|proventil|albuterol/i; // Used to identify albuterol medications
-
-	    // Date references for querying
-	    var counterLookback = chartConfig.chart.dates.line;
-	    var fhirLookback = "gt" + chartConfig.chart.dates.contextStart.toISOString().slice(0,10);
+	  
 
 	    // Patient data
 	    var encounters = []; // Relevant patient encounter information. Passed to HealthChart
 	    var medPlot = []; // Relevant medication information. Passed to HealthChart
-	    var locations = []; // Results from the "_include=Encounter:Location" parameter in the encounter request. Not passed to HealthChart
-	    var fhirMeds = []; // Temporary storage for the FHIR MedicationRequest response
-
-	    var locationMap = {}; // Key is FHIR ID and includes information to filter location
+	   
 	    var encMap = {}; // Key is FHIR ID and includes basic information about each encounter
-	    var encDateMap = {}; // Key is date string. Used to map medications to encounters 
-	    var medIdMap = {}; // Key is order ID. Used to store information about medications
 
-	    // Stores encounter information for acute encounters. This is used to link administrations
-	    // to encounters. Also used as a fallback if an OP order couldn't be linked to an encounter.
-	    var acuteCareList = [];
-
-	    var medAdminList = []; // List of order IDs to include in a payload to retrieve med admin info.
-	    var medAdminMap = {}; // Key is order ID. Maps individual administrations of an order to an encounter
-
-	    // Key is encounter FHIR ID. Stores hospital problems for resepective encounters.
-	    var hospitalProblemMap = {};
 
 	    // Build row location map based on chart config
 	    // Reduces iterations when pushing data since chartConfig.rows is an array
@@ -16725,8 +16702,7 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	  
 	}
 
-	// Implemented this since toLocaleDateString() was adding a significant
-	// amount of time in the EHR
+
 	function stringFromDate(dte) {
 	    // If date is null, return null
 	    if (!dte) {
@@ -16794,38 +16770,39 @@ wi&&(An.prototype[wi]=Xe),An}();typeof define=="function"&&typeof define.amd=="o
 	       
 	      };
 	      console.log(headers);
-	    fetch('http://localhost:3006/healthchart/gethealthchartData',
-	    {
+	      fetch('http://localhost:3006/healthchart/gethealthchartData', {
 	        method: 'GET',
 	        headers: headers
 	      })
-	    .then(response => {
+	      .then(response => {
 	        if (!response.ok) {
-	          throw new Error('Network response was not ok');
+	        //   throw new Error(response);
+	         return response.json().then(data => {
+	            if(data.error){
+	                throw new Error(data.error);
+	            }else {
+	                throw new Error('Network response was not ok');
+	            }
+	      
+	      });
 	        }
-	        // console.log("resposne",response)
-	        return response.json(); // Parse the response body as JSON
+	        // Parse the response body as JSON
+	        return response.json();
 	      })
 	      .then(async (data) => {
-
-	        // Access the filename property from the first object in the array
-
+	        // Access the data received from the server
 	        console.log(data.encounters);
-
-	        encounters = data.encounters; 
+	        encounters = data.encounters;
 	        medPlot = data.medPlot || [];
 	        encMap = data.encMap || {};
 	        chartConfig.rows = data.chartConfig.rows;
-	        // chartConfig.detailsOrder = data.chartConfig.detailsOrder
-	        console.log(encMap,"encMap");
-
-	        
 	        render();
-	        // You can do whatever you need with the filename here
 	      })
 	      .catch(error => {
 	        // Handle any errors that occurred during the fetch operation
 	        console.error('There was a problem with the fetch operation:', error);
+	        alert(error);
+	       
 	      });
 	}
 
