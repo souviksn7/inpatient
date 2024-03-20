@@ -7,18 +7,15 @@ import healthchart from "healthchart";
 
 // Internal imports
 import chartConfig from "../conf/healthchartConfig.js";
-// souvik comment
-// import demo_confic from "../conf/visitConfig.js";
 
-// EHR communication and session state
-import { addEHRListener, ehrHandshake, executeAction, setEHRToken } from "./ehrComms.js";
+import { addEHRListener } from "./ehrComms.js";
 import { getAndSetState, setStateKey, state, stateKey } from "./state.js";
 
 // Logging
-import { log, logD, flushLogs } from "./logger.js";
+import { log, flushLogs } from "./logger.js";
 
 // Shared variables and functions
-import { csnList, csnToFhirIdMap, setTokenResponse, today, tokenResponse } from "./shared.js";
+import {setTokenResponse, tokenResponse } from "./shared.js";
 
 // Authorization
 import { getAccessToken } from "./auth.js";
@@ -29,8 +26,7 @@ import { dataFail, failureSplash } from "./error.js";
 // HTTP imports
 import { getUrlParameter} from "./http.js";
 
-// Custom CHOP data
-// import customHosts from "./customHosts.js";
+
 import { carePlans} from "./aap.js";
 
 
@@ -39,15 +35,10 @@ import {  countToRTF } from "./note.js";
 
 try {
     
-    // Initialize timeline variable here to obtain access in other functions
+  
     var timeline;
 
-    // Total time from start of first request to end of last request.
-    // Added to provide better performance metrics that take into consideration
-    // browser content download time.
-
-
-    // Initialize variable to measure time in hover event
+  
     var timeIn;
 
     // Padding to ensure the application fits within the user's workspace

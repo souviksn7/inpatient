@@ -14379,15 +14379,10 @@
 
 	try {
 	    
-	    // Initialize timeline variable here to obtain access in other functions
+	  
 	    var timeline;
 
-	    // Total time from start of first request to end of last request.
-	    // Added to provide better performance metrics that take into consideration
-	    // browser content download time.
-
-
-	    // Initialize variable to measure time in hover event
+	  
 	    var timeIn;
 
 	    // Padding to ensure the application fits within the user's workspace
